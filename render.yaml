@@ -32,5 +32,3 @@ services:
         sync: false
     rootDir: apps/web-platform/backend
     healthCheckPath: /health
-
-  - type: web
