@@ -6,7 +6,8 @@ import App from './App';
 import './index.css';
 
 // Initialize Vercel Analytics and Speed Insights
-injectAnalytics();
+// Using production mode to ensure analytics data is sent to Vercel
+injectAnalytics({ mode: 'production' });
 injectSpeedInsights();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
