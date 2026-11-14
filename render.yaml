@@ -21,7 +21,7 @@ services:
       - key: BACKEND_PUBLIC_URL
         value: https://auracraft-backend-dt1u.onrender.com
       - key: ALLOWED_ORIGINS
-        value: https://auracraft-studio.onrender.com
+        value: https://auracraft-studio.vercel.app
       - key: API_AUTH_TOKEN
         sync: false
       - key: TELEGRAM_WEBHOOK_URL
@@ -34,11 +34,3 @@ services:
     healthCheckPath: /health
 
   - type: web
-    name: auracraft-studio
-    env: static
-    buildCommand: npm ci && npm run build
-    staticPublishPath: dist
-    rootDir: apps/web-platform/frontend
-    envVars:
-      - key: VITE_API_URL
-        value: https://auracraft-studio-telegram-worker.auracraftstudio.workers.dev
