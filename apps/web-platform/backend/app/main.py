@@ -56,10 +56,17 @@ app = FastAPI(
 )
 
 _allowed_origins = [origin.strip() for origin in os.getenv("ALLOWED_ORIGINS", "").split(",") if origin.strip()]
+if not _allowed_origins:
+    _allowed_origins = [
+        "https://auracraft-studio.vercel.app",
+        "https://auracraft-studio.netlify.app",
+        "http://localhost:5173",
+        "http://localhost:3000",
+    ]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins,
-    allow_credentials=bool(_allowed_origins),
+    allow_credentials=True,
     allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type", "X-Telegram-Bot-Api-Secret-Token"],
 )

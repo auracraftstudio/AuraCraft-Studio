@@ -98,10 +98,16 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
   useEffect(() => {
     setImageLoaded(false);
     const img = new Image();
-    img.crossOrigin = 'anonymous';
+    // Do NOT set crossOrigin for same-origin /public assets — it triggers CORS preflight
+    // and fails when the server doesn't send Access-Control-Allow-Origin, leaving canvas blank.
     img.onload = () => {
       imgRef.current = img;
       setImageLoaded(true);
+    };
+    img.onerror = () => {
+      // Fallback: try without cache busting
+      console.warn('[LivePhotoStage] Image failed to load:', activeCharacterUrl);
+      setImageLoaded(false);
     };
     img.src = activeCharacterUrl;
   }, [activeCharacterUrl]);
@@ -145,38 +151,61 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
       const headSway = Math.sin(tSec * 0.9) * 0.25; // degrees
 
       const img = imgRef.current;
+      const W = canvas.width;
+      const H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      // Always draw background first (even while image is loading)
+      if (bgMode === 'greenscreen') {
+        ctx.fillStyle = '#00ff00';
+        ctx.fillRect(0, 0, W, H);
+      } else if (bgMode === 'transparent') {
+        // transparent
+      } else {
+        // Cyber dark studio backdrop
+        const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 50, W / 2, H / 2, Math.max(W, H) * 0.8);
+        bgGrad.addColorStop(0, '#131b2e');
+        bgGrad.addColorStop(0.6, '#0b0f19');
+        bgGrad.addColorStop(1, '#06080d');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, W, H);
+
+        // Stage podium glow (always visible)
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(W / 2, H * 0.92, W * 0.38, H * 0.07, 0, 0, Math.PI * 2);
+        ctx.strokeStyle = '#38bdf8';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#06b6d4';
+        ctx.shadowBlur = 20;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      if (!img || !img.complete || img.naturalWidth === 0) {
+        // Loading placeholder — pulsing avatar silhouette
+        ctx.save();
+        ctx.globalAlpha = 0.18 + Math.abs(Math.sin(now * 0.001)) * 0.12;
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(W / 2, H * 0.38, W * 0.11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.ellipse(W / 2, H * 0.68, W * 0.17, H * 0.22, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.restore();
+        // Loading text
+        ctx.fillStyle = 'rgba(148,163,184,0.5)';
+        ctx.font = `${W * 0.016}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText('Loading Avatar…', W / 2, H * 0.52);
+        animFrameRef.current = requestAnimationFrame(renderLoop);
+        return;
+      }
+
       if (img && img.complete) {
-        const W = canvas.width;
-        const H = canvas.height;
-
-        ctx.clearRect(0, 0, W, H);
-
-        // Background styling
-        if (bgMode === 'greenscreen') {
-          ctx.fillStyle = '#00ff00';
-          ctx.fillRect(0, 0, W, H);
-        } else if (bgMode === 'transparent') {
-          // transparent
-        } else {
-          // Cyber dark studio backdrop
-          const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 50, W / 2, H / 2, Math.max(W, H) * 0.8);
-          bgGrad.addColorStop(0, '#131b2e');
-          bgGrad.addColorStop(0.6, '#0b0f19');
-          bgGrad.addColorStop(1, '#06080d');
-          ctx.fillStyle = bgGrad;
-          ctx.fillRect(0, 0, W, H);
-
-          // Studio Stage Circular Podium Glow
-          ctx.save();
-          ctx.beginPath();
-          ctx.ellipse(W / 2, H * 0.92, W * 0.38, H * 0.07, 0, 0, Math.PI * 2);
-          ctx.strokeStyle = '#38bdf8';
-          ctx.lineWidth = 3;
-          ctx.shadowColor = '#06b6d4';
-          ctx.shadowBlur = 20;
-          ctx.stroke();
-          ctx.restore();
-        }
+        // Background + podium already drawn above; now draw the character
 
         // Draw character with natural breathing and jaw-drop morph
         ctx.save();
