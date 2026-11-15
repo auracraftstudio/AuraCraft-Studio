@@ -446,7 +446,7 @@ export default function App() {
       <main className="flex-1 overflow-hidden relative flex">
         {/* TAB 1: PRODUCTION 3-PANEL STUDIO STAGE */}
         {activeTab === 'studio' && (
-          <div className="flex-1 flex flex-col xl:flex-row h-full w-full overflow-y-auto xl:overflow-hidden">
+          <div className="flex-1 flex flex-col lg:flex-row h-full w-full overflow-hidden">
             {/* 1. LEFT PANEL: Tool Shelf & Character Presets Roster */}
             <StudioLeftPanel
               stageMode={stageMode}
@@ -477,8 +477,8 @@ export default function App() {
             />
 
             {/* 2. CENTER STAGE: The Hero Viewport (Photo or 3D) */}
-            <div className="flex-1 flex flex-col relative min-h-[45vh] xl:min-h-0 xl:h-full bg-[#0a0d14] overflow-hidden">
-              <div className="w-full h-full">
+            <div className="flex-1 min-w-0 h-full flex flex-col relative bg-[#0a0d14] overflow-hidden">
+              <div className="w-full h-full relative flex-1 min-h-0">
                 {stageMode === 'photo' ? (
                   <LivePhotoStage
                     currentEmotion={currentEmotion}
@@ -534,7 +534,7 @@ export default function App() {
             </div>
 
             {/* 3. RIGHT SIDEBAR: Speech Synthesis Engine, Emotions, API Monitor, Stream Settings */}
-            <aside className="w-full xl:w-84 max-h-[45vh] xl:max-h-none xl:h-full border-t xl:border-t-0 xl:border-l border-[#1f293d] bg-[#0c101c]/95 flex flex-col p-3 gap-3 overflow-y-auto z-30 shadow-2xl flex-shrink-0">
+            <aside className="w-full lg:w-80 xl:w-96 h-auto lg:h-full border-t lg:border-t-0 lg:border-l border-[#1f293d] bg-[#0c101c]/95 flex flex-col p-3 gap-3 overflow-y-auto z-30 shadow-2xl flex-shrink-0">
               <VoiceSelector
                 currentVoice={currentVoice}
                 lang={lang}
