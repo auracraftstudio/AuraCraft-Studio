@@ -320,9 +320,9 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
 
       {/* Top Floating Controls Bar */}
       <div className="absolute top-3 left-4 right-4 z-20 flex flex-col gap-2 pointer-events-auto">
-        <div className="flex items-center gap-2 flex-wrap bg-[#0d1322]/95 backdrop-blur-md border border-[#23314f] p-2 rounded-xl shadow-2xl text-xs">
+        <div className="flex items-center gap-2 flex-wrap bg-[#0A0F1E]/95 backdrop-blur-md border border-[#1a2540] p-2 rounded-xl shadow-2xl text-xs">
           {/* Categories */}
-          <div className="flex items-center gap-1 border-r border-slate-700/60 pr-2">
+          <div className="flex items-center gap-1 border-r border-[#1a2540] pr-2">
             {[
               { id: 'all', label: t.catAll },
               { id: 'anime', label: t.catPhoto },
@@ -334,7 +334,7 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
                 className={`px-2 py-1 rounded-lg text-[11px] font-semibold transition-all ${
                   activeCategory === cat.id
                     ? 'bg-purple-600 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-[#0f1628]'
                 }`}
               >
                 {cat.label}
@@ -343,7 +343,7 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
           </div>
 
           {/* Preset Photo Character Pills */}
-          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-xl">
+          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 max-w-xl no-scrollbar">
             {PRESET_PHOTO_CHARACTERS
               .filter(c => activeCategory === 'all' || c.category === activeCategory)
               .map(c => (
@@ -355,8 +355,8 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
                   }}
                   className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all whitespace-nowrap ${
                     activeCharacterName.includes(c.name.split(' ')[0])
-                      ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-md shadow-pink-600/30 ring-1 ring-pink-400'
-                      : 'bg-[#141b2d] text-slate-300 hover:bg-slate-800/60 border border-slate-700/40'
+                      ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30 ring-1 ring-purple-400'
+                      : 'bg-[#0f1628] text-slate-300 hover:bg-[#152038] border border-[#1a2540]'
                   }`}
                 >
                   <span>{c.name}</span>
@@ -369,7 +369,7 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
             {onResetPhoto && (
               <button
                 onClick={onResetPhoto}
-                className="flex items-center gap-1.5 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-500/50 hover:border-rose-400 text-rose-300 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all shadow-md shadow-rose-950/40"
+                className="flex items-center gap-1.5 bg-[#0f1628] hover:bg-rose-950/40 border border-[#1a2540] hover:border-rose-500/40 text-slate-400 hover:text-rose-300 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all shadow-sm"
                 title={t.removePhoto || 'Remove Photo / Reset to Default'}
               >
                 <Trash2 className="w-3.5 h-3.5 text-rose-400" />
@@ -379,7 +379,7 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
 
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-3 py-1 rounded-lg text-[11px] font-semibold transition-all shadow-md shadow-pink-600/20"
+              className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-500 text-white px-3 py-1 rounded-lg text-[11px] font-semibold transition-all shadow-md shadow-purple-900/30 border border-purple-400/30"
               title="Upload any real photo, selfie, or cosplay image"
             >
               <Upload className="w-3.5 h-3.5" />
@@ -389,7 +389,7 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
         </div>
 
         {/* Sub-row: Camera Zoom & Mouth Position Calibration */}
-        <div className="flex items-center justify-between bg-[#0a0f1d]/90 backdrop-blur-md border border-[#1b253b] px-3 py-1.5 rounded-xl shadow-lg text-[11px]">
+        <div className="flex items-center justify-between bg-[#0A0F1E]/95 backdrop-blur-md border border-[#1a2540] px-3 py-1.5 rounded-xl shadow-lg text-[11px]">
           {/* Zoom Modes */}
           <div className="flex items-center gap-1.5">
             <span className="text-slate-400 font-medium">Camera:</span>
@@ -401,10 +401,10 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
               <button
                 key={z.id}
                 onClick={() => setCurrentZoom(z.id as any)}
-                className={`px-2 py-0.5 rounded text-[10px] font-bold transition-all ${
+                className={`px-2 py-0.5 rounded text-[10px] font-semibold transition-all ${
                   currentZoom === z.id
-                    ? 'bg-pink-600 text-white'
-                    : 'text-slate-400 hover:text-slate-200'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200 hover:bg-[#0f1628]'
                 }`}
               >
                 {z.label}
@@ -414,7 +414,7 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
 
           {/* Mouth Position Slider */}
           <div className="flex items-center gap-2">
-            <Sliders className="w-3 h-3 text-slate-400" />
+            <Sliders className="w-3 h-3 text-purple-400" />
             <span className="text-slate-400 text-[10px]">{t.mouthPos}:</span>
             <input
               type="range"
@@ -423,9 +423,9 @@ export const LivePhotoStage: React.FC<LivePhotoStageProps> = ({
               step="0.01"
               value={mouthYPercent}
               onChange={(e) => setMouthYPercent(parseFloat(e.target.value))}
-              className="w-24 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500"
+              className="w-24 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
             />
-            <span className="text-[10px] text-pink-400 font-mono">
+            <span className="text-[10px] text-purple-300 font-mono">
               {Math.round(mouthYPercent * 100)}%
             </span>
           </div>
