@@ -108,14 +108,14 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
   };
 
   return (
-    <div className="bg-[#111726]/95 border border-[#1f293d] rounded-2xl p-3.5 shadow-xl flex flex-col gap-3">
+    <div className="bg-[#0A0F1E] border border-[#1a2540] rounded-2xl p-3.5 shadow-xl flex flex-col gap-3">
       {/* Header */}
-      <div className="flex items-center justify-between pb-1.5 border-b border-slate-700/50 text-xs">
+      <div className="flex items-center justify-between pb-1.5 border-b border-[#1a2540] text-xs">
         <span className="flex items-center gap-1.5 font-bold text-slate-200">
-          <Volume2 className="w-4 h-4 text-cyan-400" />
+          <Volume2 className="w-4 h-4 text-purple-400" />
           <span>{isMyanmar ? 'အသံစနစ် (Neural Voice)' : 'Neural Voice Engine'}</span>
         </span>
-        <span className="text-[10px] bg-cyan-950/80 text-cyan-400 px-2 py-0.5 rounded-full border border-cyan-800/40 font-semibold font-mono">
+        <span className="text-[10px] bg-purple-500/10 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/25 font-semibold font-mono">
           Edge-TTS
         </span>
       </div>
@@ -130,8 +130,8 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
               onClick={() => onSelectVoice(v.id)}
               className={`p-2 rounded-xl text-left border transition-all flex flex-col gap-0.5 ${
                 isSelected
-                  ? 'bg-gradient-to-r from-purple-900/60 to-cyan-950/60 border-cyan-500/80 shadow-md shadow-cyan-900/20 ring-1 ring-cyan-500'
-                  : 'bg-[#0b0f19] border-slate-800/80 hover:bg-slate-800/50 hover:border-slate-700'
+                  ? 'bg-purple-500/15 border-purple-500 shadow-md shadow-purple-900/20 text-purple-200 ring-1 ring-purple-500/40'
+                  : 'bg-[#0f1628]/60 border-[#1a2540] hover:bg-[#152038] hover:border-purple-500/30'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -164,7 +164,7 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
             <button
               key={i}
               onClick={() => setTestText(s.text)}
-              className="bg-[#0b0f19] hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-200 px-2 py-0.5 rounded-lg whitespace-nowrap transition-all"
+              className="bg-[#0f1628] hover:bg-[#152038] border border-[#1a2540] hover:border-purple-500/30 text-slate-400 hover:text-slate-200 px-2 py-0.5 rounded-lg whitespace-nowrap transition-all"
             >
               {s.label}
             </button>
@@ -176,16 +176,16 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
           value={testText}
           onChange={(e) => setTestText(e.target.value)}
           placeholder={isMyanmar ? 'ပြောကြားမည့် စာသားကို ဤနေရာတွင် ရိုက်ထည့်ပါ...' : 'Type script for avatar to speak with real-time lip sync...'}
-          className="w-full bg-[#090d16] border border-slate-800 focus:border-cyan-500 rounded-xl p-2.5 text-xs text-slate-100 placeholder-slate-600 outline-none resize-none transition-colors"
+          className="w-full bg-[#050A14] border border-[#1a2540] focus:border-purple-500 rounded-xl p-2.5 text-xs text-slate-100 placeholder-slate-600 outline-none resize-none transition-colors"
         />
       </div>
 
       {/* Speed & Pitch Controls */}
-      <div className="grid grid-cols-2 gap-2 bg-[#090d16] p-2 rounded-xl border border-slate-800/80 text-[11px]">
+      <div className="grid grid-cols-2 gap-2 bg-[#050A14] p-2 rounded-xl border border-[#1a2540] text-[11px]">
         <div className="flex flex-col gap-1">
           <div className="flex justify-between text-slate-400 text-[10px]">
             <span>{isMyanmar ? 'အမြန်နှုန်း' : 'Speed'}</span>
-            <span className="text-cyan-400 font-mono font-bold">{rate.toFixed(1)}x</span>
+            <span className="text-purple-300 font-mono font-bold">{rate.toFixed(1)}x</span>
           </div>
           <input
             type="range"
@@ -194,14 +194,14 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
             step="0.1"
             value={rate}
             onChange={(e) => setRate(parseFloat(e.target.value))}
-            className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+            className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
           />
         </div>
 
         <div className="flex flex-col gap-1">
           <div className="flex justify-between text-slate-400 text-[10px]">
             <span>{isMyanmar ? 'အမြင့်အနိမ့်' : 'Pitch'}</span>
-            <span className="text-purple-400 font-mono font-bold">{pitch > 0 ? `+${pitch}` : pitch}Hz</span>
+            <span className="text-purple-300 font-mono font-bold">{pitch > 0 ? `+${pitch}` : pitch}Hz</span>
           </div>
           <input
             type="range"
@@ -210,7 +210,7 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
             step="2"
             value={pitch}
             onChange={(e) => setPitch(parseInt(e.target.value))}
-            className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-400"
+            className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
           />
         </div>
       </div>
@@ -220,16 +220,16 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
         <button
           onClick={handleSpeak}
           disabled={loading || !testText.trim()}
-          className="flex-1 bg-gradient-to-r from-cyan-600 via-indigo-600 to-purple-600 hover:from-cyan-500 hover:to-purple-500 disabled:opacity-50 text-white font-bold py-2.5 px-3 rounded-xl transition-all shadow-lg shadow-cyan-600/25 flex items-center justify-center gap-2 text-xs"
+          className="flex-1 bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold py-2.5 px-3 rounded-xl transition-all shadow-lg shadow-purple-900/30 flex items-center justify-center gap-2 text-xs border border-purple-400/30"
         >
           {loading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin text-cyan-200" />
+              <Loader2 className="w-4 h-4 animate-spin text-white" />
               <span>{isMyanmar ? 'အသံထုတ်လုပ်နေသည်...' : 'Synthesizing...'}</span>
             </>
           ) : (
             <>
-              <Sparkles className="w-4 h-4 text-cyan-200" />
+              <Sparkles className="w-4 h-4 text-white" />
               <span>{isMyanmar ? 'အသံထုတ်ပြီး စကားပြောပါ' : 'Generate & Speak'}</span>
             </>
           )}
@@ -240,7 +240,7 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
             href={lastAudioUrl}
             download="auracraft_speech.mp3"
             title="Download MP3 Audio"
-            className="p-2.5 bg-[#0b0f19] hover:bg-slate-800 border border-slate-700 text-slate-300 hover:text-cyan-300 rounded-xl transition-all shadow-sm flex items-center justify-center"
+            className="p-2.5 bg-[#0f1628] hover:bg-[#152038] border border-[#1a2540] text-slate-300 hover:text-purple-300 rounded-xl transition-all shadow-sm flex items-center justify-center"
           >
             <Download className="w-4 h-4" />
           </a>
