@@ -9,7 +9,7 @@ workers_dev = true
 [vars]
 ENVIRONMENT = "production"
 BACKEND_API_URL = "https://auracraft-backend-dt1u.onrender.com"
-ALLOWED_ORIGINS = "https://auracraft-studio.onrender.com"
+ALLOWED_ORIGINS = "https://auracraft-studio.vercel.app"
 
 [observability]
 enabled = true
@@ -21,4 +21,8 @@ enabled = true
 
 # Secrets to configure with `wrangler secret put <NAME>`:
 # - API_AUTH_TOKEN (same value as the backend; never expose it to Vite)
-# - TELEGRAM_WEBHOOK_SECRET (same value as the backend)
+# - TELEGRAM_WEBHOOK_SECRET
+# - TELEGRAM_BOT_TOKEN
+# - TELEGRAM_GROUP_CHAT_ID
+# - TELEGRAM_TOPIC_ID
+# - TELEGRAM_ALLOWED_USER_IDS
