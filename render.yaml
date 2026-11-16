@@ -25,9 +25,9 @@ services:
       - key: API_AUTH_TOKEN
         sync: false
       - key: TELEGRAM_WEBHOOK_URL
-        value: https://auracraft-studio-telegram-worker.auracraftstudio.workers.dev/webhook
+        value: https://auracraft-studio-edge.auracraftstudio.workers.dev/webhook
       - key: TELEGRAM_API_PROXY_URL
-        value: https://auracraft-studio-telegram-worker.auracraftstudio.workers.dev/telegram-api
+        value: https://auracraft-studio-edge.auracraftstudio.workers.dev/telegram-api
       - key: TELEGRAM_IMPORT_ALLOWED_HOSTS
         sync: false
     rootDir: apps/web-platform/backend
