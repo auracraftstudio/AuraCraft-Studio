@@ -257,7 +257,7 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
   });
 
   return (
-    <aside className="w-full lg:w-64 xl:w-72 h-auto lg:h-full border-b lg:border-b-0 lg:border-r border-[#1f293d] bg-[#0c101c]/95 flex flex-col shadow-2xl z-30 flex-shrink-0 select-none">
+    <aside className="w-full lg:w-64 xl:w-72 h-auto lg:h-full border-b lg:border-b-0 lg:border-r border-[#1a2540] bg-[#0A0F1E] flex flex-col shadow-2xl z-30 flex-shrink-0 select-none">
       {/* Hidden File Inputs */}
       <input
         ref={photoInputRef}
@@ -280,18 +280,18 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
         }}
       />
 
-      {/* 1. STAGE MODE TOGGLE SWITCHER (Option 1 vs Option 2) */}
-      <div className="p-3 border-b border-[#1f293d] flex flex-col gap-2">
+      {/* 1. STAGE MODE TOGGLE SWITCHER (Photo vs 3D) */}
+      <div className="p-3 border-b border-[#1a2540] flex flex-col gap-2">
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
           {isMyanmar ? 'စင်မြင့် အင်ဂျင်ရွေးချယ်ရန်' : 'Avatar Engine Mode'}
         </span>
 
-        <div className="grid grid-cols-2 gap-1.5 bg-[#0a0d16] p-1 rounded-xl border border-slate-800">
+        <div className="grid grid-cols-2 gap-1.5 bg-[#050A14] p-1 rounded-xl border border-[#1a2540]">
           <button
             onClick={() => onSelectStageMode('photo')}
-            className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all ${
               stageMode === 'photo'
-                ? 'bg-gradient-to-r from-pink-600 to-purple-600 text-white shadow-md shadow-pink-600/30'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -301,9 +301,9 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
 
           <button
             onClick={() => onSelectStageMode('3d')}
-            className={`flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center justify-center gap-1.5 py-1.5 px-2 rounded-lg text-xs font-semibold transition-all ${
               stageMode === '3d'
-                ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-md shadow-cyan-600/30'
+                ? 'bg-purple-600 text-white shadow-md shadow-purple-600/30'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
@@ -314,15 +314,15 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
       </div>
 
       {/* 2. CATEGORY PILLS */}
-      <div className="px-3 pt-3 pb-1 border-b border-[#1f293d]/50 flex items-center gap-1 overflow-x-auto text-[11px]">
+      <div className="px-3 pt-3 pb-2 border-b border-[#1a2540] flex items-center gap-1 overflow-x-auto text-[11px] no-scrollbar">
         {CATEGORIES.map(cat => (
           <button
             key={cat.id}
             onClick={() => setActiveCategory(cat.id)}
-            className={`px-2.5 py-1 rounded-lg font-semibold whitespace-nowrap transition-all ${
+            className={`px-2.5 py-1 rounded-lg font-medium whitespace-nowrap transition-all ${
               activeCategory === cat.id
                 ? 'bg-purple-600 text-white shadow-sm'
-                : 'bg-[#111726] text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-slate-800'
+                : 'bg-[#0f1628] text-slate-400 hover:text-slate-200 hover:bg-[#152038] border border-[#1a2540]'
             }`}
           >
             {cat.label}
@@ -333,7 +333,7 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
       {/* 3. CHARACTER CARDS LIST */}
       <div className="flex-1 overflow-y-auto p-2.5 flex flex-col gap-1.5">
         {/* Roster Header with Count & Reset link */}
-        <div className="flex items-center justify-between px-1 pb-1 border-b border-[#1f293d]/40 mb-1">
+        <div className="flex items-center justify-between px-1 pb-1 border-b border-[#1a2540]/60 mb-1">
           <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
             <Layers className="w-3 h-3 text-purple-400" />
             <span>{isMyanmar ? `စတေ့ချ် Avatar (${filteredCharacters.length})` : `Stage Avatars (${filteredCharacters.length})`}</span>
@@ -342,7 +342,7 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
           {onResetAllPresets && deletedCharacterIds && deletedCharacterIds.length > 0 && (
             <button
               onClick={onResetAllPresets}
-              className="text-[10px] text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-medium transition-colors"
+              className="text-[10px] text-purple-400 hover:text-purple-300 flex items-center gap-1 font-medium transition-colors"
               title={isMyanmar ? 'ဖျက်ထားသော မူလဇာတ်ကောင်များ ပြန်ထားမည်' : 'Restore All Preset Characters'}
             >
               <RotateCcw className="w-2.5 h-2.5" />
@@ -358,7 +358,7 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
             {onResetAllPresets && (
               <button
                 onClick={onResetAllPresets}
-                className="text-[11px] text-cyan-400 hover:underline flex items-center gap-1 mt-1"
+                className="text-[11px] text-purple-400 hover:underline flex items-center gap-1 mt-1"
               >
                 <RotateCcw className="w-3 h-3" />
                 <span>{isMyanmar ? 'မူလဇာတ်ကောင်များ ပြန်ထားပါ' : 'Restore default presets'}</span>
@@ -375,31 +375,31 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
               onClick={() => onSelectCharacter(char)}
               className={`w-full p-2 rounded-xl text-left border transition-all flex items-center gap-2.5 group cursor-pointer ${
                 isSelected
-                  ? 'bg-gradient-to-r from-purple-950/70 to-indigo-950/70 border-cyan-500/80 shadow-lg shadow-purple-900/20 ring-1 ring-cyan-500/50'
-                  : 'bg-[#111726]/80 hover:bg-[#161f33] border-slate-800/80 hover:border-slate-700'
+                  ? 'bg-purple-500/15 border-purple-500 shadow-md shadow-purple-900/20 text-purple-200'
+                  : 'bg-[#0f1628]/60 hover:bg-[#152038] border-[#1a2540] hover:border-purple-500/30'
               }`}
             >
               {/* Thumbnail */}
-              <div className="w-10 h-10 rounded-lg overflow-hidden border border-slate-700/80 bg-slate-900 flex-shrink-0 relative">
+              <div className="w-10 h-10 rounded-lg overflow-hidden border border-[#1a2540] bg-slate-900 flex-shrink-0 relative">
                 {char.avatarMode === 'photo' ? (
                   <img src={char.avatarThumb} alt={char.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-cyan-950 to-purple-950">
-                    <Sparkles className="w-4 h-4 text-cyan-400" />
+                  <div className="w-full h-full flex items-center justify-center bg-purple-950/40">
+                    <Sparkles className="w-4 h-4 text-purple-400" />
                   </div>
                 )}
                 {isSelected && (
-                  <div className="absolute inset-0 bg-cyan-500/20 ring-2 ring-cyan-400 rounded-lg" />
+                  <div className="absolute inset-0 bg-purple-500/20 ring-1 ring-purple-400 rounded-lg" />
                 )}
               </div>
 
               {/* Character Details */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-100 truncate group-hover:text-cyan-300 transition-colors flex items-center gap-1">
+                  <span className="text-xs font-bold text-slate-100 truncate group-hover:text-purple-300 transition-colors flex items-center gap-1">
                     {char.name}
                     {char.isCustom && (
-                      <span className="text-[8px] bg-pink-900/80 text-pink-300 border border-pink-700/50 px-1 rounded uppercase">
+                      <span className="text-[8px] bg-purple-900/80 text-purple-300 border border-purple-700/50 px-1 rounded uppercase">
                         {t.customTag || 'Custom'}
                       </span>
                     )}
@@ -414,8 +414,8 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
               <div className="flex items-center gap-1 flex-shrink-0">
                 <span className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase border ${
                   char.avatarMode === 'photo'
-                    ? 'bg-pink-950/80 text-pink-300 border-pink-700/50'
-                    : 'bg-cyan-950/80 text-cyan-300 border-cyan-700/50'
+                    ? 'bg-purple-500/15 text-purple-300 border-purple-500/30'
+                    : 'bg-[#152038] text-slate-300 border-[#1a2540]'
                 }`}>
                   {char.avatarMode === 'photo' ? 'Photo' : '3D'}
                 </span>
@@ -445,7 +445,7 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
       </div>
 
       {/* 4. ASSET & AVATAR IMPORTERS (Upload photo / RPM 3D / VRM) */}
-      <div className="p-3 border-t border-[#1f293d] bg-[#090d16] flex flex-col gap-1.5">
+      <div className="p-3 border-t border-[#1a2540] bg-[#070b16] flex flex-col gap-1.5">
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
           {isMyanmar ? 'ကိုယ်ပိုင်သွင်းယူရန်' : 'Asset Importers'}
         </span>
@@ -453,13 +453,13 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
         {/* Upload Custom Photo Button */}
         <button
           onClick={() => photoInputRef.current?.click()}
-          className="w-full bg-[#111726] hover:bg-[#1a233a] border border-pink-500/40 hover:border-pink-500 text-pink-300 p-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all shadow-sm"
+          className="w-full bg-[#0A0F1E] hover:bg-[#12192d] border border-[#1a2540] hover:border-purple-500/40 text-slate-200 p-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-all shadow-sm"
         >
           <div className="flex items-center gap-2">
-            <Camera className="w-3.5 h-3.5 text-pink-400" />
+            <Camera className="w-3.5 h-3.5 text-purple-400" />
             <span>{isMyanmar ? 'ဓာတ်ပုံ အသစ်တင်ရန်' : 'Upload Any Photo'}</span>
           </div>
-          <Upload className="w-3 h-3 text-pink-400" />
+          <Upload className="w-3 h-3 text-purple-400" />
         </button>
 
         {/* Ready Player Me 3D Importer */}
@@ -475,25 +475,25 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
               onImportRPMUrl(url.trim());
             }
           }}
-          className="w-full bg-[#111726] hover:bg-[#1a233a] border border-indigo-500/40 hover:border-indigo-500 text-indigo-300 p-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all shadow-sm"
+          className="w-full bg-[#0A0F1E] hover:bg-[#12192d] border border-[#1a2540] hover:border-purple-500/40 text-slate-200 p-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-all shadow-sm"
         >
           <div className="flex items-center gap-2">
-            <Globe className="w-3.5 h-3.5 text-indigo-400" />
+            <Globe className="w-3.5 h-3.5 text-purple-400" />
             <span>Ready Player Me 3D</span>
           </div>
-          <Sparkles className="w-3 h-3 text-indigo-400" />
+          <Sparkles className="w-3 h-3 text-purple-400" />
         </button>
 
         {/* Upload Custom 3D VRM Model */}
         <button
           onClick={() => vrmInputRef.current?.click()}
-          className="w-full bg-[#111726] hover:bg-[#1a233a] border border-cyan-500/40 hover:border-cyan-500 text-cyan-300 p-2 rounded-xl text-xs font-bold flex items-center justify-between transition-all shadow-sm"
+          className="w-full bg-[#0A0F1E] hover:bg-[#12192d] border border-[#1a2540] hover:border-purple-500/40 text-slate-200 p-2 rounded-xl text-xs font-semibold flex items-center justify-between transition-all shadow-sm"
         >
           <div className="flex items-center gap-2">
-            <Upload className="w-3.5 h-3.5 text-cyan-400" />
+            <Upload className="w-3.5 h-3.5 text-purple-400" />
             <span>{isMyanmar ? '3D Model (.VRM) တင်ရန်' : 'Upload Custom 3D (.vrm)'}</span>
           </div>
-          <ChevronRight className="w-3 h-3 text-cyan-400" />
+          <ChevronRight className="w-3 h-3 text-purple-400" />
         </button>
       </div>
     </aside>

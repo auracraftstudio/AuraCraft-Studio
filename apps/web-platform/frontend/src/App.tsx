@@ -600,18 +600,18 @@ export default function App() {
 
               {/* Bottom Stage Status Badge */}
               <footer className="absolute bottom-3 left-4 right-4 z-20 flex items-center justify-between text-[11px] text-slate-400 pointer-events-none">
-                <div className="bg-[#111726]/90 backdrop-blur-md border border-[#1f293d] px-3.5 py-1.5 rounded-xl pointer-events-auto shadow-lg flex items-center gap-2">
+                <div className="bg-[#0A0F1E]/95 backdrop-blur-md border border-[#1a2540] px-3.5 py-1.5 rounded-xl pointer-events-auto shadow-lg flex items-center gap-2">
                   <span>{t.actor}: </span>
-                  <span className="text-cyan-400 font-semibold">{currentActorName}</span>
-                  <span className="text-slate-600">|</span>
+                  <span className="text-purple-300 font-semibold">{currentActorName}</span>
+                  <span className="text-slate-700">|</span>
                   <span>{t.voice}: </span>
-                  <span className="text-purple-400 font-medium">{currentVoice}</span>
-                  <span className="text-slate-600">|</span>
+                  <span className="text-slate-200 font-medium">{currentVoice}</span>
+                  <span className="text-slate-700">|</span>
                   <span>{t.emotion}: </span>
-                  <span className="text-amber-400 font-medium uppercase">{currentEmotion}</span>
+                  <span className="text-purple-300 font-medium uppercase">{currentEmotion}</span>
                 </div>
 
-                <div className="bg-[#111726]/90 backdrop-blur-md border border-[#1f293d] px-3.5 py-1.5 rounded-xl pointer-events-auto text-[10px] text-slate-400 shadow-lg">
+                <div className="bg-[#0A0F1E]/95 backdrop-blur-md border border-[#1a2540] px-3.5 py-1.5 rounded-xl pointer-events-auto text-[10px] text-slate-400 shadow-lg">
                   {stageMode === 'photo' ? t.photoBadge : t.threeDBadge}
                 </div>
               </footer>
