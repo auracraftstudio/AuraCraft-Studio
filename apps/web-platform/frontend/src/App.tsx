@@ -15,19 +15,21 @@ import { BroadcastPage } from './pages/BroadcastPage';
 import { SettingsPage } from './pages/SettingsPage';
 import { PhotoAvatarPage } from './pages/PhotoAvatarPage';
 import { ImageToCharPage } from './pages/ImageToCharPage';
+import { WorkflowsPage } from './pages/WorkflowsPage';
+import { UsagePage } from './pages/UsagePage';
 import { LibraryView } from './components/LibraryView';
 import { DetailView } from './components/DetailView';
 import { initDefaultSettings, storeBlob, getBlob, deleteBlob } from './db/database';
 import { 
   Radio, Sparkles, Layers, Volume2, Clapperboard, Tv, Settings, 
   UserCheck, ShieldCheck, ExternalLink, RefreshCw, Camera, Wand2, Globe, Mic, MicOff,
-  Library
+  Library, Workflow, BarChart3
 } from 'lucide-react';
 import { lipSync } from './audio/lipSyncAnalyzer';
 import { translations, type Language } from './utils/i18n';
 import type { Character } from './types/character';
 
-type NavTab = 'studio' | 'characters' | 'voices' | 'video' | 'broadcast' | 'photo' | 'img2char' | 'library' | 'settings';
+type NavTab = 'studio' | 'characters' | 'voices' | 'video' | 'broadcast' | 'photo' | 'img2char' | 'library' | 'workflows' | 'usage' | 'settings';
 
 export default function App() {
   const [lang, setLang] = useState<Language>('en');
@@ -345,82 +347,54 @@ export default function App() {
     }
   };
 
-  const navItems = [
-    { id: 'studio',     label: t.studio,      icon: Sparkles },
-    { id: 'library',    label: 'Library',     icon: Library },
-    { id: 'characters', label: t.characters,  icon: Layers },
-    { id: 'voices',     label: t.voices,      icon: Volume2 },
-    { id: 'video',      label: t.video,       icon: Clapperboard },
-    { id: 'broadcast',  label: t.broadcast,   icon: Tv },
-    { id: 'photo',      label: t.photoAvatar, icon: Camera },
-    { id: 'img2char',   label: t.img2char,    icon: Wand2 },
-    { id: 'settings',   label: t.settings,    icon: Settings },
-  ];
-
   return (
-    <div className="flex flex-col h-screen w-screen bg-[#0a0d14] text-slate-100 overflow-hidden font-sans">
+    <div className="flex flex-col h-screen w-screen bg-[#050A14] text-slate-100 overflow-hidden font-sans">
       {/* Top Global Navigation Bar */}
-      <header className="h-14 bg-[#0d121f]/95 backdrop-blur-md border-b border-[#1f293d] px-4 flex items-center justify-between z-40 flex-shrink-0 shadow-lg">
+      <header className="h-14 bg-[#0A0F1E]/95 backdrop-blur-md border-b border-[#1a2540] px-4 flex items-center justify-between z-40 flex-shrink-0 shadow-sm">
         {/* Brand Logo & Name */}
         <div className="flex items-center gap-3">
           <div 
             onClick={() => setActiveTab('studio')}
-            className="flex items-center gap-2.5 cursor-pointer group"
+            className="flex items-center gap-2.5 cursor-pointer group select-none"
           >
             <AuraCraftLogo size={28} />
             <div>
               <div className="text-xs font-bold text-slate-100 tracking-wide flex items-center gap-1.5 group-hover:text-purple-300 transition-colors">
                 AuraCraft Studio
-                <span className="text-[9px] bg-gradient-to-r from-purple-900 to-indigo-900 text-purple-300 border border-purple-700/50 px-1.5 py-0.2 rounded uppercase font-semibold">
+                <span className="text-[9px] bg-purple-500/15 text-purple-300 border border-purple-500/30 px-1.5 py-0.2 rounded uppercase font-semibold">
                   AI Persona Suite
                 </span>
               </div>
-              <div className="text-[10px] text-slate-400">The Nexus Hub Ecosystem</div>
+              <div className="text-[10px] text-slate-500">The Nexus Ecosystem</div>
             </div>
           </div>
         </div>
 
-        {/* Center Page Nav Tabs with smooth horizontal scroll on narrower screens */}
-        <nav className="flex items-center gap-1 bg-[#0a0d14] border border-[#23314f] p-1 rounded-xl shadow-inner text-xs overflow-x-auto max-w-[50vw] xl:max-w-none no-scrollbar flex-shrink">
-          {navItems.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as NavTab)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                  isActive
-                    ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold shadow-md shadow-purple-600/30'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
-        </nav>
+        {/* Center Breadcrumb Indicator */}
+        <div className="hidden md:flex items-center gap-2 text-xs text-slate-400">
+          <span className="text-slate-500">Workspace /</span>
+          <span className="text-purple-300 font-semibold capitalize">{activeTab}</span>
+        </div>
 
         {/* Right Controls: Language Switcher, Speaking badge, Port badge */}
         <div className="flex items-center gap-2.5">
           {/* EN / MM Language Toggle Button */}
           <button
             onClick={() => setLang(lang === 'en' ? 'my' : 'en')}
-            className="flex items-center gap-1.5 bg-[#111726] hover:bg-[#1c263d] border border-[#23314f] hover:border-cyan-500/50 px-2.5 py-1 rounded-xl text-xs font-bold text-cyan-300 transition-all shadow-sm"
+            className="flex items-center gap-1.5 bg-[#0f1628] hover:bg-[#152038] border border-purple-500/25 hover:border-purple-400/50 px-2.5 py-1 rounded-lg text-xs font-bold text-purple-300 transition-all shadow-sm"
             title="Switch Language / ဘာသာစကားပြောင်းရန်"
           >
-            <Globe className="w-3.5 h-3.5 text-cyan-400" />
-            <span>{lang === 'en' ? '🇬🇧 EN' : '🇲🇲 MM'}</span>
+            <Globe className="w-3.5 h-3.5 text-purple-400" />
+            <span>{lang === 'en' ? 'EN' : 'MM'}</span>
           </button>
 
           {/* Real-time Microphone Input for Live Streamers & VTubers */}
           <button
             onClick={toggleMic}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold transition-all shadow-sm ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all shadow-sm ${
               isMicActive
                 ? 'bg-rose-600/30 border border-rose-500 text-rose-300 animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.3)]'
-                : 'bg-[#111726] hover:bg-[#1c263d] border border-[#23314f] text-slate-300 hover:text-white'
+                : 'bg-[#0f1628] hover:bg-[#152038] border border-[#1a2540] text-slate-300 hover:text-white'
             }`}
             title={isMicActive ? t.micActive : t.liveMic}
           >
@@ -429,21 +403,131 @@ export default function App() {
           </button>
 
           {isSpeaking && (
-            <div className="flex items-center gap-1.5 bg-rose-500/20 border border-rose-500/60 px-2.5 py-1 rounded-full text-rose-300 text-xs font-semibold animate-pulse shadow-[0_0_12px_rgba(244,63,94,0.3)]">
+            <div className="flex items-center gap-1.5 bg-purple-500/20 border border-purple-500/50 px-2.5 py-1 rounded-full text-purple-300 text-xs font-semibold animate-pulse shadow-[0_0_12px_rgba(168,85,247,0.3)]">
               <Radio className="w-3.5 h-3.5" />
               <span>{t.speaking}</span>
             </div>
           )}
 
-          <div className="flex items-center gap-1.5 bg-[#111726] border border-[#23314f] px-2.5 py-1 rounded-xl text-xs text-slate-300 shadow-sm">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+          <div className="flex items-center gap-1.5 bg-[#0f1628] border border-[#1a2540] px-2.5 py-1 rounded-lg text-xs text-slate-300 shadow-sm">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="text-[11px] font-medium text-emerald-400">{t.online}</span>
           </div>
         </div>
       </header>
 
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-hidden relative flex">
+      {/* Main Container: 200px Left Sidebar + Right Content Viewport */}
+      <div className="flex-1 flex overflow-hidden relative">
+        {/* Left Sidebar Navigation (Linear.app Style, 200px) */}
+        <aside className="w-52 h-full bg-[#0A0F1E] border-r border-[#1a2540] flex flex-col flex-shrink-0 z-30 select-none">
+          <div className="flex-1 overflow-y-auto p-3 space-y-4">
+            {/* Section 1: PRODUCTION STUDIO */}
+            <div>
+              <div className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Production Studio
+              </div>
+              <div className="space-y-1">
+                {[
+                  { id: 'studio',     label: t.studio,     icon: Sparkles },
+                  { id: 'library',    label: 'Library',    icon: Library },
+                  { id: 'characters', label: t.characters, icon: Layers },
+                  { id: 'voices',     label: t.voices,     icon: Volume2 },
+                  { id: 'video',      label: t.video,      icon: Clapperboard },
+                  { id: 'broadcast',  label: t.broadcast,  icon: Tv },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id as NavTab)}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                        isActive
+                          ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30 font-semibold'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-[#0f1628]'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-purple-400' : 'text-slate-400'}`} />
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Section 2: GENERATIVE LAB */}
+            <div>
+              <div className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Persona Lab
+              </div>
+              <div className="space-y-1">
+                {[
+                  { id: 'photo',    label: t.photoAvatar, icon: Camera },
+                  { id: 'img2char', label: t.img2char,    icon: Wand2 },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id as NavTab)}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                        isActive
+                          ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30 font-semibold'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-[#0f1628]'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-purple-400' : 'text-slate-400'}`} />
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Section 3: PIPELINE & TELEMETRY */}
+            <div>
+              <div className="px-2.5 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                Engine & Metrics
+              </div>
+              <div className="space-y-1">
+                {[
+                  { id: 'workflows', label: 'Workflows',  icon: Workflow },
+                  { id: 'usage',     label: 'Usage & API', icon: BarChart3 },
+                  { id: 'settings',  label: t.settings,   icon: Settings },
+                ].map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id as NavTab)}
+                      className={`w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
+                        isActive
+                          ? 'bg-purple-500/15 text-purple-300 border border-purple-500/30 font-semibold'
+                          : 'text-slate-400 hover:text-slate-200 hover:bg-[#0f1628]'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 flex-shrink-0 ${isActive ? 'text-purple-400' : 'text-slate-400'}`} />
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar Footer Status Indicator */}
+          <div className="p-3 border-t border-[#1a2540] bg-[#070b16] text-[10px] text-slate-500 flex items-center justify-between">
+            <span className="font-semibold text-slate-400">AuraCraft Studio</span>
+            <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono text-[9px] border border-purple-500/20">
+              {stageMode.toUpperCase()}
+            </span>
+          </div>
+        </aside>
+
+        {/* Main Content Area */}
+        <main className="flex-1 overflow-hidden relative flex bg-[#050A14]">
         {/* TAB 1: PRODUCTION 3-PANEL STUDIO STAGE */}
         {activeTab === 'studio' && (
           <div className="flex-1 flex flex-col lg:flex-row h-full w-full overflow-hidden">
@@ -611,9 +695,16 @@ export default function App() {
           />
         )}
 
-        {/* TAB 8: SETTINGS PAGE */}
+        {/* TAB 8: WORKFLOWS PIPELINE PAGE */}
+        {activeTab === 'workflows' && <WorkflowsPage />}
+
+        {/* TAB 9: USAGE & TELEMETRY MONITOR PAGE */}
+        {activeTab === 'usage' && <UsagePage />}
+
+        {/* TAB 10: SETTINGS PAGE */}
         {activeTab === 'settings' && <SettingsPage />}
       </main>
+    </div>
 
       {/* ── CHARACTER DETAIL VIEW MODAL ── */}
       {selectedCharacter && (
