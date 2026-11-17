@@ -1,4 +1,8 @@
-<div align="center">\n\n<img src="docs/assets/auracraft-banner.svg" alt="AuraCraft Studio — Create, Animate, Speak, Broadcast" width="100%" />\n\n# AuraCraft Studio
+<div align="center">
+
+<img src="https://raw.githubusercontent.com/auracraftstudio/AuraCraft-Studio/main/docs/assets/auracraft-banner.svg" alt="AuraCraft Studio — Create, Animate, Speak, Broadcast" width="100%" />
+
+# AuraCraft Studio
 
 <p align="center">
   <strong>CREATE BEYOND THE ORDINARY.</strong><br/>
