@@ -21,7 +21,7 @@ export interface StudioCharacter {
 }
 
 export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
-  // 1. Photo Characters (Ultra-Realistic Talking Photo)
+  // 1. Photo Characters
   {
     id: 'photo_aoi_blue',
     name: 'Aoi (Blue Hair Kimono)',
@@ -30,7 +30,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: 'photo',
     url: '/avatars/blue_hair_girl.jpg',
     avatarThumb: '/avatars/blue_hair_girl.jpg',
-    badge: '🌸 Real Photo',
+    badge: 'Photo Portrait',
     defaultVoice: 'ja-JP-NanamiNeural',
     defaultEmotion: 'neutral',
   },
@@ -42,7 +42,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: 'photo',
     url: '/avatars/blonde_cosplay_girl.jpg',
     avatarThumb: '/avatars/blonde_cosplay_girl.jpg',
-    badge: '🌸 Real Photo',
+    badge: 'Photo Portrait',
     defaultVoice: 'ja-JP-NanamiNeural',
     defaultEmotion: 'happy',
   },
@@ -54,7 +54,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: 'photo',
     url: '/avatars/blue_hair_girl.jpg',
     avatarThumb: '/avatars/blue_hair_girl.jpg',
-    badge: '👤 Real Human',
+    badge: 'Real Human',
     defaultVoice: 'my-MM-NilarNeural',
     defaultEmotion: 'neutral',
   },
@@ -66,7 +66,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: 'photo',
     url: '/avatars/blonde_cosplay_girl.jpg',
     avatarThumb: '/avatars/blonde_cosplay_girl.jpg',
-    badge: '👤 Real Human',
+    badge: 'Real Human',
     defaultVoice: 'my-MM-ThihaNeural',
     defaultEmotion: 'neutral',
   },
@@ -80,7 +80,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/models/avatar_female_a.vrm',
     avatarThumb: '/models/avatar_female_a.vrm',
-    badge: '🌸 3D VRM',
+    badge: '3D VRM Idol',
     defaultVoice: 'ja-JP-NanamiNeural',
     defaultEmotion: 'happy',
   },
@@ -92,7 +92,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/models/avatar_female_a.vrm',
     avatarThumb: '/models/avatar_female_a.vrm',
-    badge: '💙 3D VRM',
+    badge: '3D VRM Heroine',
     defaultVoice: 'ja-JP-NanamiNeural',
     defaultEmotion: 'neutral',
   },
@@ -104,7 +104,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/models/avatar_female_c.vrm',
     avatarThumb: '/models/avatar_female_c.vrm',
-    badge: '⚡ 3D Mecha',
+    badge: '3D VRM Mecha',
     defaultVoice: 'ja-JP-KeitaNeural',
     defaultEmotion: 'neutral',
   },
@@ -118,7 +118,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/avatar_human.vrm',
     avatarThumb: '/avatar_human.vrm',
-    badge: '👤 3D Human',
+    badge: '3D Human Leader',
     defaultVoice: 'my-MM-NilarNeural',
     defaultEmotion: 'neutral',
   },
@@ -130,7 +130,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/avatar_human.vrm',
     avatarThumb: '/avatar_human.vrm',
-    badge: '👤 3D Human',
+    badge: '3D News Anchor',
     defaultVoice: 'my-MM-ThihaNeural',
     defaultEmotion: 'neutral',
   },
@@ -142,7 +142,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/avatar_human.vrm',
     avatarThumb: '/avatar_human.vrm',
-    badge: '👤 3D Human',
+    badge: '3D Scientist',
     defaultVoice: 'my-MM-ThihaNeural',
     defaultEmotion: 'neutral',
   },
@@ -156,7 +156,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/models/avatar_female_a.vrm',
     avatarThumb: '/models/avatar_female_a.vrm',
-    badge: '🇲🇲 Myanmar 3D',
+    badge: 'Myanmar 3D Host',
     defaultVoice: 'my-MM-NilarNeural',
     defaultEmotion: 'neutral',
   },
@@ -168,7 +168,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/avatar_human.vrm',
     avatarThumb: '/avatar_human.vrm',
-    badge: '🇲🇲 Myanmar 3D',
+    badge: 'Myanmar 3D Royal',
     defaultVoice: 'my-MM-ThihaNeural',
     defaultEmotion: 'neutral',
   },
@@ -182,7 +182,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/avatar_human.vrm',
     avatarThumb: '/avatar_human.vrm',
-    badge: '🎖️ Army Tactical',
+    badge: 'Tactical Commander',
     defaultVoice: 'en-US-GuyNeural',
     defaultEmotion: 'neutral',
   },
@@ -196,7 +196,7 @@ export const ALL_STUDIO_CHARACTERS: StudioCharacter[] = [
     avatarMode: '3d',
     url: '/models/avatar_female_a.vrm',
     avatarThumb: '/models/avatar_female_a.vrm',
-    badge: '🎙️ 3D Streamer',
+    badge: '3D VTuber',
     defaultVoice: 'en-US-JennyNeural',
     defaultEmotion: 'happy',
   },
@@ -239,14 +239,13 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
 
   const CATEGORIES = [
     { id: 'all', label: isMyanmar ? 'အားလုံး' : 'All' },
-    { id: 'photo', label: isMyanmar ? '📸 ဓာတ်ပုံ' : '📸 Photo' },
-    { id: 'anime', label: isMyanmar ? '🌸 အန်နီမေး' : '🌸 Anime' },
-    { id: 'realistic', label: isMyanmar ? '👤 လူရုပ်' : '👤 Real 3D' },
-    { id: 'myanmar', label: isMyanmar ? '🇲🇲 မြန်မာ' : '🇲🇲 Myanmar' },
-    { id: 'army', label: isMyanmar ? '🎖️ တပ်' : '🎖️ Army' },
+    { id: 'photo', label: isMyanmar ? 'ဓာတ်ပုံ' : 'Photo' },
+    { id: 'anime', label: isMyanmar ? 'အန်နီမေး' : 'Anime' },
+    { id: 'realistic', label: isMyanmar ? 'လူရုပ် 3D' : 'Real 3D' },
+    { id: 'myanmar', label: isMyanmar ? 'မြန်မာ' : 'Myanmar' },
+    { id: 'army', label: isMyanmar ? 'တပ်ဖွဲ့' : 'Tactical' },
   ];
 
-  // Combine custom characters and preset characters minus deleted ones
   const activePresets = ALL_STUDIO_CHARACTERS.filter(c => !deletedCharacterIds.includes(c.id));
   const combinedList = [...customCharacters, ...activePresets];
 
@@ -332,7 +331,6 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
 
       {/* 3. CHARACTER CARDS LIST */}
       <div className="flex-1 overflow-y-auto p-2.5 flex flex-col gap-1.5">
-        {/* Roster Header with Count & Reset link */}
         <div className="flex items-center justify-between px-1 pb-1 border-b border-[#1a2540]/60 mb-1">
           <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
             <Layers className="w-3 h-3 text-purple-400" />
@@ -420,7 +418,6 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
                   {char.avatarMode === 'photo' ? 'Photo' : '3D'}
                 </span>
 
-                {/* Delete / Trash Button */}
                 {onDeleteCharacter && (
                   <button
                     type="button"
@@ -444,7 +441,7 @@ export const StudioLeftPanel: React.FC<StudioLeftPanelProps> = ({
         })}
       </div>
 
-      {/* 4. ASSET & AVATAR IMPORTERS (Upload photo / RPM 3D / VRM) */}
+      {/* 4. ASSET & AVATAR IMPORTERS */}
       <div className="p-3 border-t border-[#1a2540] bg-[#070b16] flex flex-col gap-1.5">
         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
           {isMyanmar ? 'ကိုယ်ပိုင်သွင်းယူရန်' : 'Asset Importers'}

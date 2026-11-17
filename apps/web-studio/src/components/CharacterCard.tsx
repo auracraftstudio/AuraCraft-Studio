@@ -6,18 +6,18 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Eye, Download, Trash2, Heart, Star } from 'lucide-react';
+import { Eye, Download, Trash2, Heart, Star, User } from 'lucide-react';
 import type { Character, CharacterStyle } from '../types/character';
 
 // ─────────────────────────────────────────────
 // Style Badge Config
 // ─────────────────────────────────────────────
 const STYLE_CONFIG: Record<CharacterStyle, { label: string; color: string }> = {
-  anime:     { label: 'Anime',     color: 'bg-purple-900/60 text-purple-300 border-purple-700/50' },
-  realistic: { label: 'Realistic', color: 'bg-blue-900/60 text-blue-300 border-blue-700/50' },
-  myanmar:   { label: 'Myanmar',   color: 'bg-amber-900/60 text-amber-300 border-amber-700/50' },
-  army:      { label: 'Army',      color: 'bg-green-900/60 text-green-300 border-green-700/50' },
-  custom:    { label: 'Custom',    color: 'bg-slate-800/60 text-slate-300 border-slate-600/50' },
+  anime:     { label: 'Anime',     color: 'bg-purple-900/40 text-purple-300 border-purple-500/40' },
+  realistic: { label: 'Realistic', color: 'bg-cyan-950/40 text-cyan-300 border-cyan-500/40' },
+  myanmar:   { label: 'Myanmar',   color: 'bg-amber-950/40 text-amber-300 border-amber-500/40' },
+  army:      { label: 'Tactical',  color: 'bg-emerald-950/40 text-emerald-300 border-emerald-500/40' },
+  custom:    { label: 'Custom',    color: 'bg-slate-800/40 text-slate-300 border-slate-700/50' },
 };
 
 // ─────────────────────────────────────────────
@@ -77,10 +77,10 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
       aria-label={`Character ${character.name}, style ${character.style}`}
       className="
         group relative flex flex-col
-        bg-[#0d121f] border border-[#1f293d]
+        bg-[#0A0F1E] border border-[#1A2540]
         rounded-2xl overflow-hidden cursor-pointer
-        hover:border-indigo-500/60 hover:shadow-xl hover:shadow-indigo-900/20
-        focus:outline-none focus:ring-2 focus:ring-indigo-500/50
+        hover:border-purple-500/60 hover:shadow-lg hover:shadow-purple-900/20
+        focus:outline-none focus:ring-2 focus:ring-purple-500/50
         transition-all duration-200
       "
       onClick={() => onPreview(character)}
@@ -91,8 +91,8 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
         }
       }}
     >
-      {/* ── Thumbnail (4:5 Portrait Ratio for 3D/Anime Character Busts) ── */}
-      <div className="relative w-full aspect-[4/5] bg-gradient-to-b from-[#111827] to-[#0a0d14] overflow-hidden">
+      {/* Thumbnail (4:5 Portrait Ratio) */}
+      <div className="relative w-full aspect-[4/5] bg-[#050A14] overflow-hidden">
         {thumbnailUrl ? (
           <img
             src={thumbnailUrl}
@@ -101,18 +101,18 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
-            <span className="text-5xl opacity-30">🧍</span>
+            <User className="w-12 h-12 text-slate-700 stroke-[1.2]" />
           </div>
         )}
 
         {/* Favorite star badge */}
         {character.isFavorite && (
-          <div className="absolute top-2 left-2 bg-amber-500/90 text-white rounded-full p-1 shadow-lg">
+          <div className="absolute top-2 left-2 bg-purple-600/90 text-white rounded-full p-1 shadow-md">
             <Star className="w-3 h-3 fill-current" />
           </div>
         )}
 
-        {/* Quick Actions overlay — visible on hover and focus-within */}
+        {/* Quick Actions overlay */}
         <div className="
           absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent
           opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-within:opacity-100
@@ -123,8 +123,8 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(character); }}
             className={`p-1.5 rounded-lg border transition-colors ${
               character.isFavorite
-                ? 'bg-amber-500/30 border-amber-500/60 text-amber-300 hover:bg-amber-500/50'
-                : 'bg-black/40 border-white/20 text-white/70 hover:text-amber-300 hover:bg-amber-500/20'
+                ? 'bg-rose-500/30 border-rose-500/60 text-rose-300 hover:bg-rose-500/50'
+                : 'bg-black/40 border-white/20 text-white/70 hover:text-rose-300 hover:bg-rose-500/20'
             }`}
             title={character.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
             aria-label={character.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
@@ -134,7 +134,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
 
           <button
             onClick={(e) => { e.stopPropagation(); onExport(character); }}
-            className="p-1.5 rounded-lg bg-black/40 border border-white/20 text-white/70 hover:text-indigo-300 hover:bg-indigo-500/20 hover:border-indigo-500/50 transition-colors"
+            className="p-1.5 rounded-lg bg-black/40 border border-white/20 text-white/70 hover:text-purple-300 hover:bg-purple-500/20 hover:border-purple-500/50 transition-colors"
             title="Export .aura"
             aria-label="Export .aura package"
           >
@@ -156,26 +156,26 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           absolute inset-0 flex items-center justify-center
           opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none
         ">
-          <div className="bg-white/10 backdrop-blur-sm rounded-full p-3 border border-white/20">
-            <Eye className="w-5 h-5 text-white" />
+          <div className="bg-purple-600/30 backdrop-blur-sm rounded-full p-2.5 border border-purple-500/40">
+            <Eye className="w-4 h-4 text-purple-200" />
           </div>
         </div>
       </div>
 
-      {/* ── Info & Metadata ── */}
+      {/* Info & Metadata */}
       <div className="p-3 flex flex-col gap-2">
         <div className="flex items-center justify-between gap-1.5">
-          <p className="text-sm font-semibold text-slate-100 truncate flex-1" title={character.name}>
+          <p className="text-xs font-bold text-slate-100 truncate flex-1" title={character.name}>
             {character.name}
           </p>
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${styleColor}`}>
+          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border shrink-0 ${styleColor}`}>
             {styleLabel}
           </span>
         </div>
 
         {character.tags.length > 0 && (
           <div className="flex items-center gap-1.5 text-[10px] text-slate-400 overflow-hidden">
-            <span className="truncate bg-slate-800/60 px-1.5 py-0.5 rounded border border-slate-700/50">
+            <span className="truncate bg-[#050A14] px-1.5 py-0.5 rounded border border-[#1A2540]">
               #{character.tags[0]}
             </span>
             {character.tags.length > 1 && (
@@ -184,12 +184,12 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           </div>
         )}
 
-        {/* Mobile-friendly quick action buttons (visible on mobile / touch viewports) */}
-        <div className="flex md:hidden items-center justify-between pt-1.5 border-t border-[#1f293d]/60 mt-0.5">
+        {/* Mobile-friendly quick action buttons */}
+        <div className="flex md:hidden items-center justify-between pt-1.5 border-t border-[#1A2540] mt-0.5">
           <button
             onClick={(e) => { e.stopPropagation(); onToggleFavorite(character); }}
             className={`p-1.5 rounded-md text-xs flex items-center gap-1 ${
-              character.isFavorite ? 'text-amber-400' : 'text-slate-400 hover:text-amber-300'
+              character.isFavorite ? 'text-rose-400' : 'text-slate-400 hover:text-rose-300'
             }`}
             aria-label="Favorite"
           >
@@ -198,7 +198,7 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
           <div className="flex items-center gap-1.5">
             <button
               onClick={(e) => { e.stopPropagation(); onExport(character); }}
-              className="p-1.5 rounded-md text-slate-400 hover:text-indigo-300"
+              className="p-1.5 rounded-md text-slate-400 hover:text-purple-300"
               title="Export"
               aria-label="Export"
             >
@@ -216,27 +216,26 @@ export const CharacterCard: React.FC<CharacterCardProps> = ({
         </div>
       </div>
 
-      {/* ── Delete Confirmation Overlay ── */}
+      {/* Delete Confirmation Overlay */}
       {showDeleteConfirm && (
         <div
-          className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center gap-3 p-4 z-10"
+          className="absolute inset-0 bg-black/90 flex flex-col items-center justify-center gap-2.5 p-4 z-10"
           onClick={(e) => e.stopPropagation()}
         >
-          <Trash2 className="w-8 h-8 text-rose-400" />
-          <p className="text-sm text-slate-200 text-center font-medium">
+          <Trash2 className="w-6 h-6 text-rose-400" />
+          <p className="text-xs text-slate-200 text-center font-medium">
             Delete <span className="text-rose-300">"{character.name}"</span>?
           </p>
-          <p className="text-xs text-slate-400 text-center">This cannot be undone.</p>
-          <div className="flex gap-2 w-full">
+          <div className="flex gap-2 w-full pt-1">
             <button
               onClick={handleCancelDelete}
-              className="flex-1 py-1.5 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium transition-colors"
+              className="flex-1 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirmDelete}
-              className="flex-1 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors"
+              className="flex-1 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold transition-colors"
             >
               Delete
             </button>

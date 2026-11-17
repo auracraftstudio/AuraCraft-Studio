@@ -6,7 +6,9 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Users, Heart, FolderOpen, Plus, RefreshCw } from 'lucide-react';
+import { 
+  Users, Heart, FolderOpen, Plus, RefreshCw, Sparkles, User, Globe, Shield, Wand2 
+} from 'lucide-react';
 import { SearchBar } from './SearchBar';
 import { CharacterCard } from './CharacterCard';
 import { ImportDropZone } from './ImportDropZone';
@@ -21,12 +23,12 @@ type LibraryFilter = 'all' | 'favorites' | CharacterStyle;
 
 const FILTER_ITEMS: { id: LibraryFilter; label: string; icon: React.ReactNode }[] = [
   { id: 'all',       label: 'All Characters', icon: <Users className="w-4 h-4" /> },
-  { id: 'favorites', label: 'Favorites',       icon: <Heart className="w-4 h-4" /> },
-  { id: 'anime',     label: 'Anime',           icon: <span className="text-sm">🎌</span> },
-  { id: 'realistic', label: 'Realistic',       icon: <span className="text-sm">👤</span> },
-  { id: 'myanmar',   label: 'Myanmar',         icon: <span className="text-sm">🇲🇲</span> },
-  { id: 'army',      label: 'Army',            icon: <span className="text-sm">🪖</span> },
-  { id: 'custom',    label: 'Custom',          icon: <span className="text-sm">✨</span> },
+  { id: 'favorites', label: 'Favorites',       icon: <Heart className="w-4 h-4 text-rose-400" /> },
+  { id: 'anime',     label: 'Anime',           icon: <Sparkles className="w-4 h-4 text-purple-400" /> },
+  { id: 'realistic', label: 'Realistic',       icon: <User className="w-4 h-4 text-cyan-400" /> },
+  { id: 'myanmar',   label: 'Myanmar',         icon: <Globe className="w-4 h-4 text-amber-400" /> },
+  { id: 'army',      label: 'Army',            icon: <Shield className="w-4 h-4 text-emerald-400" /> },
+  { id: 'custom',    label: 'Custom',          icon: <Wand2 className="w-4 h-4 text-purple-300" /> },
 ];
 
 // ─────────────────────────────────────────────
@@ -47,7 +49,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
   const [isLoading, setIsLoading] = useState(true);
   const [showImport, setShowImport] = useState(false);
 
-  // ── Load all characters from Dexie ──
+  // Load all characters from Dexie
   const loadCharacters = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -63,7 +65,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
     loadCharacters();
   }, [loadCharacters]);
 
-  // ── Apply active filter to character list ──
+  // Apply active filter to character list
   const applyFilter = useCallback(
     (chars: Character[], filter: LibraryFilter): Character[] => {
       if (filter === 'all') return chars;
@@ -80,7 +82,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
     }
   }, [activeFilter, allCharacters, searchQuery, applyFilter]);
 
-  // ── Handlers ──
+  // Handlers
   const handleSearchResults = useCallback(
     (results: Character[]) => {
       setDisplayedCharacters(applyFilter(results, activeFilter));
@@ -122,16 +124,13 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
     [activeFilter, applyFilter]
   );
 
-  // ─────────────────────────────────────────────
-  // Render
-  // ─────────────────────────────────────────────
   return (
-    <div className="flex h-full w-full overflow-hidden bg-[#0a0d14]">
-      {/* ── LEFT SIDEBAR: Filter Navigation (Desktop) ── */}
-      <aside className="hidden md:flex w-52 flex-shrink-0 border-r border-[#1f293d] bg-[#0c101c]/90 flex-col p-3 gap-1 overflow-y-auto">
+    <div className="flex h-full w-full overflow-hidden bg-[#050A14]">
+      {/* LEFT SIDEBAR: Filter Navigation (Desktop) */}
+      <aside className="hidden md:flex w-52 flex-shrink-0 border-r border-[#1A2540] bg-[#0A0F1E] flex-col p-3 gap-1 overflow-y-auto">
         <div className="flex items-center gap-2 px-2 pt-1 pb-3">
-          <FolderOpen className="w-4 h-4 text-indigo-400" />
-          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Library</span>
+          <FolderOpen className="w-4 h-4 text-purple-400" />
+          <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">Asset Library</span>
         </div>
 
         {FILTER_ITEMS.map((item) => (
@@ -139,21 +138,21 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
             key={item.id}
             onClick={() => setActiveFilter(item.id)}
             className={`
-              flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm font-medium text-left
+              flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-left
               transition-all duration-150
               ${activeFilter === item.id
-                ? 'bg-indigo-600/30 text-indigo-300 border border-indigo-500/40'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/40'
+                ? 'bg-purple-600/20 text-purple-300 border border-purple-500/40 font-semibold'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-[#121B30]'
               }
             `}
           >
             {item.icon}
-            {item.label}
+            <span>{item.label}</span>
             {item.id === 'all' && (
-              <span className="ml-auto text-xs text-slate-500">{allCharacters.length}</span>
+              <span className="ml-auto text-[10px] text-slate-500 font-mono">{allCharacters.length}</span>
             )}
             {item.id === 'favorites' && (
-              <span className="ml-auto text-xs text-slate-500">
+              <span className="ml-auto text-[10px] text-slate-500 font-mono">
                 {allCharacters.filter((c) => c.isFavorite).length}
               </span>
             )}
@@ -165,22 +164,21 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
           <button
             onClick={() => setShowImport(!showImport)}
             className="
-              w-full flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium
-              bg-indigo-600/20 border border-indigo-500/30 text-indigo-300
-              hover:bg-indigo-600/30 hover:border-indigo-500/60
-              transition-all
+              w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold
+              bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/25
+              transition-all active:scale-95
             "
           >
             <Plus className="w-4 h-4" />
-            Import Character
+            <span>Import Character</span>
           </button>
         </div>
       </aside>
 
-      {/* ── MAIN CONTENT AREA ── */}
+      {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Top bar: Search + Import Toggle + Refresh */}
-        <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-[#1f293d] bg-[#0d121f]/80">
+        <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 border-b border-[#1A2540] bg-[#0A0F1E]">
           <div className="flex-1">
             <SearchBar
               characters={allCharacters}
@@ -193,8 +191,8 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
             onClick={() => setShowImport(!showImport)}
             className={`flex md:hidden p-2 rounded-xl border transition-colors ${
               showImport
-                ? 'bg-indigo-600 border-indigo-500 text-white'
-                : 'bg-[#111827] border-[#1f293d] text-indigo-400 hover:text-white'
+                ? 'bg-purple-600 border-purple-500 text-white'
+                : 'bg-[#050A14] border-[#1A2540] text-purple-400 hover:text-white'
             }`}
             title="Import character"
             aria-label="Import character"
@@ -203,7 +201,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
           </button>
           <button
             onClick={loadCharacters}
-            className="p-2 rounded-xl bg-[#111827] border border-[#1f293d] text-slate-400 hover:text-slate-200 hover:border-slate-500 transition-colors"
+            className="p-2 rounded-xl bg-[#050A14] border border-[#1A2540] text-slate-400 hover:text-slate-200 hover:border-purple-500/40 transition-colors"
             title="Refresh library"
             aria-label="Refresh library"
           >
@@ -212,7 +210,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
         </div>
 
         {/* Mobile Horizontal Filter Pills */}
-        <div className="flex md:hidden overflow-x-auto py-2 px-3 gap-1.5 border-b border-[#1f293d]/50 bg-[#0c101c]/80 no-scrollbar">
+        <div className="flex md:hidden overflow-x-auto py-2 px-3 gap-1.5 border-b border-[#1A2540] bg-[#0A0F1E] no-scrollbar">
           {FILTER_ITEMS.map((item) => (
             <button
               key={item.id}
@@ -221,8 +219,8 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
                 flex-shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium
                 transition-all
                 ${activeFilter === item.id
-                  ? 'bg-indigo-600 text-white font-semibold'
-                  : 'bg-[#111827] text-slate-400 hover:text-slate-200 border border-[#1f293d]'
+                  ? 'bg-purple-600 text-white font-semibold'
+                  : 'bg-[#050A14] text-slate-400 hover:text-slate-200 border border-[#1A2540]'
                 }
               `}
             >
@@ -243,28 +241,28 @@ export const LibraryView: React.FC<LibraryViewProps> = ({ onPreviewCharacter }) 
         <div className="flex-1 overflow-y-auto p-4">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
-              <div className="text-slate-500 text-sm">Loading library...</div>
+              <div className="text-slate-500 text-sm">Loading library assets...</div>
             </div>
           ) : displayedCharacters.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full gap-4 text-center">
-              <span className="text-6xl opacity-20">🗄️</span>
+              <FolderOpen className="w-16 h-16 text-slate-700 stroke-[1.2]" />
               <div>
-                <p className="text-slate-400 font-medium">
-                  {searchQuery ? 'No results found' : 'Your library is empty'}
+                <p className="text-slate-300 font-semibold text-sm">
+                  {searchQuery ? 'No matching characters found' : 'Your asset library is empty'}
                 </p>
-                <p className="text-slate-600 text-sm mt-1">
+                <p className="text-slate-500 text-xs mt-1 max-w-sm">
                   {searchQuery
-                    ? 'Try a different search term'
-                    : 'This is normal for a new workspace. Import a .vrm or .aura file to add items; built-in Stage Avatars and Casting Presets are listed separately.'}
+                    ? 'Try searching with a different name or keyword filter.'
+                    : 'Import a .vrm or .aura bundle to add items to your local storage catalog.'}
                 </p>
               </div>
               {!searchQuery && (
                 <button
                   onClick={() => setShowImport(true)}
-                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold transition-all shadow-md active:scale-95"
                 >
                   <Plus className="w-4 h-4" />
-                  Import Character
+                  <span>Import Character</span>
                 </button>
               )}
             </div>

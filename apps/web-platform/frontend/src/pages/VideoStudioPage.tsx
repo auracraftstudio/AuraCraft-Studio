@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Clapperboard, Video, Plus, Trash2, Download, Check, Sparkles, Smartphone, Monitor, Clock, Play, Loader2 } from 'lucide-react';
+import { 
+  Clapperboard, Video, Plus, Trash2, Download, Check, Sparkles, 
+  Smartphone, Monitor, Clock, Play, Loader2, Camera, Sliders, Film
+} from 'lucide-react';
 import { API_ENDPOINTS } from '../config/api';
 import { createSceneId } from './videoStudioUtils';
 import { Viewport3D } from '../components/Viewport3D';
@@ -56,7 +59,6 @@ export const VideoStudioPage: React.FC = () => {
   const [videoRenderNotice, setVideoRenderNotice] = useState<string | null>(null);
 
   useEffect(() => {
-    // FIX(audit-3-D): populate casting IDs from the backend rather than hardcoding a request ID.
     fetch(API_ENDPOINTS.characters).then(async (response) => {
       if (!response.ok) throw new Error('Character list unavailable');
       const records = await response.json();
@@ -98,37 +100,40 @@ export const VideoStudioPage: React.FC = () => {
     return new Promise((resolve, reject) => {
       const timeout = window.setTimeout(() => {
         resolveAvatarStageRef.current = null;
-        reject(new Error('3D avatar stage did not finish loading within 30 seconds.'));
-      }, 30000);
+        reject(new Error('3D avatar stage timed out while initializing canvas stream.'));
+      }, 18000);
       resolveAvatarStageRef.current = (canvas) => {
         window.clearTimeout(timeout);
         resolveAvatarStageRef.current = null;
         resolve(canvas);
       };
+      if (avatarCanvasRef.current && avatarModelStatusRef.current !== 'loading') {
+        window.clearTimeout(timeout);
+        resolveAvatarStageRef.current = null;
+        resolve(avatarCanvasRef.current);
+      }
     });
   }, []);
 
   const addScene = () => {
-    const newId = createSceneId();
-    setScenes((current) => [
-      ...current,
-      {
-        id: newId,
-        title: 'Scene ' + (current.length + 1) + ': Custom Chapter',
-        script: 'နောက်ထပ် ဇာတ်ကွက် စာသားကို ဤနေရာတွင် ရေးသားနိုင်ပါသည်။',
-        emotion: 'neutral',
-        camera: 'bust',
-      },
-    ]);
+    const nextIdx = scenes.length + 1;
+    const newScene = {
+      id: createSceneId(),
+      title: `Scene ${nextIdx}: Sequence Segment`,
+      script: 'ဇာတ်ဝင်ခန်း အသစ်တွင် ပြောဆိုမည့် စာသားကို ဤနေရာတွင် ထည့်သွင်းပါ...',
+      emotion: 'neutral',
+      camera: 'bust',
+    };
+    setScenes([...scenes, newScene]);
   };
 
   const removeScene = (id: string) => {
     if (scenes.length <= 1) return;
-    setScenes((current) => current.filter((s) => s.id !== id));
+    setScenes(scenes.filter((s) => s.id !== id));
   };
 
-  const updateScene = (id: string, field: string, val: any) => {
-    setScenes((current) => current.map((s) => (s.id === id ? { ...s, [field]: val } : s)));
+  const updateScene = (id: string, field: string, val: string) => {
+    setScenes(scenes.map((s) => (s.id === id ? { ...s, [field]: val } : s)));
   };
 
   const totalEstimatedSeconds = scenes.length * durationPerScene;
@@ -136,17 +141,16 @@ export const VideoStudioPage: React.FC = () => {
   const handleGenerateManifest = async () => {
     setIsGeneratingPlan(true);
     setGenerationError(null);
-    setGeneratedPlan(null);
     const localManifest = {
-      project: 'AuraCraft Studio - Video Render Plan',
-      version: '1.0.0',
-      aspect_ratio: aspectRatio,
+      project_id: `auracraft_video_${Date.now()}`,
+      created_at: new Date().toISOString(),
       character: characterName,
       character_id: selectedCharacterId,
-      voice_id: voiceId,
+      aspect_ratio: aspectRatio,
       total_scenes: scenes.length,
-      estimated_duration_seconds: totalEstimatedSeconds,
-      timeline: scenes.map((s, idx) => ({
+      estimated_duration_sec: totalEstimatedSeconds,
+      narration_voice: voiceId,
+      scenes: scenes.map((s, idx) => ({
         scene_index: idx + 1,
         title: s.title,
         script: s.script,
@@ -174,7 +178,6 @@ export const VideoStudioPage: React.FC = () => {
       const plan = await res.json();
       setGeneratedPlan({ ...localManifest, server_plan: plan });
     } catch (error) {
-      // FIX(audit-3-D): never present a local-only draft as a successful backend render plan.
       setGeneratedPlan(null);
       setGenerationError(error instanceof Error ? error.message : 'Render plan generation failed.');
     } finally {
@@ -227,32 +230,29 @@ export const VideoStudioPage: React.FC = () => {
 
     let avatarCanvas: HTMLCanvasElement | null = null;
     const audioContext = new AudioContext();
-    let canvasStream: MediaStream | null = null;
-    let combinedStream: MediaStream | null = null;
-    let recorder: MediaRecorder | null = null;
 
     const drawScene = (scene: typeof scenes[number], index: number, elapsed: number, sceneDuration: number) => {
       const progress = Math.min(1, elapsed / sceneDuration);
       if (avatarCanvas) {
         ctx.drawImage(avatarCanvas, 0, 0, width, height);
-        ctx.fillStyle = 'rgba(7, 11, 20, 0.28)';
+        ctx.fillStyle = 'rgba(5, 10, 20, 0.35)';
         ctx.fillRect(0, 0, width, height);
       } else {
         const gradient = ctx.createLinearGradient(0, 0, width, height);
-        gradient.addColorStop(0, '#10172b');
-        gradient.addColorStop(0.55, '#25154b');
-        gradient.addColorStop(1, '#071b2b');
+        gradient.addColorStop(0, '#050A14');
+        gradient.addColorStop(0.55, '#1E1035');
+        gradient.addColorStop(1, '#081426');
         ctx.fillStyle = gradient;
         ctx.fillRect(0, 0, width, height);
-        ctx.fillStyle = 'rgba(139, 92, 246, 0.12)';
+        ctx.fillStyle = 'rgba(168, 85, 247, 0.12)';
         ctx.beginPath();
         ctx.arc(width * (0.82 - progress * 0.12), height * 0.18, Math.min(width, height) * 0.24, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.fillStyle = '#a78bfa';
+      ctx.fillStyle = '#A855F7';
       ctx.font = '600 22px system-ui, sans-serif';
       ctx.fillText('AURACRAFT STUDIO', width * 0.08, height * 0.1);
-      ctx.fillStyle = '#c4b5fd';
+      ctx.fillStyle = '#C084FC';
       ctx.font = '500 18px system-ui, sans-serif';
       ctx.fillText(`SCENE ${index + 1} / ${scenes.length}  •  ${scene.emotion.toUpperCase()}  •  CAMERA: ${scene.camera.toUpperCase()}`, width * 0.08, height * 0.16);
 
@@ -281,7 +281,7 @@ export const VideoStudioPage: React.FC = () => {
 
       ctx.fillStyle = 'rgba(255,255,255,0.18)';
       ctx.fillRect(width * 0.08, height * 0.88, width * 0.84, 6);
-      ctx.fillStyle = '#a78bfa';
+      ctx.fillStyle = '#A855F7';
       ctx.fillRect(width * 0.08, height * 0.88, width * 0.84 * progress, 6);
       ctx.fillStyle = '#94a3b8';
       ctx.font = '16px system-ui, sans-serif';
@@ -299,109 +299,102 @@ export const VideoStudioPage: React.FC = () => {
         const response = await fetch(API_ENDPOINTS.tts, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: scenes[index].script, voice: voiceId, rate: '+0%', pitch: '+0Hz' }),
+          body: JSON.stringify({ text: scenes[index].script, voice: voiceId }),
         });
-        if (!response.ok) throw new Error(`Edge-TTS synthesis failed for scene ${index + 1} (${response.status}).`);
-        const audioData = await response.arrayBuffer();
-        audioBuffers.push(await audioContext.decodeAudioData(audioData));
+        if (!response.ok) throw new Error('Audio generation failed for scene ' + (index + 1));
+        const arrayBuffer = await response.arrayBuffer();
+        const decoded = await audioContext.decodeAudioData(arrayBuffer.slice(0));
+        audioBuffers.push(decoded);
+        setRenderProgress(Math.round(((index + 1) / scenes.length) * 35));
       }
 
-      const audioDestination = audioContext.createMediaStreamDestination();
-      canvasStream = canvas.captureStream(30);
-      combinedStream = new MediaStream([
+      const totalAudioDuration = audioBuffers.reduce((acc, b) => acc + b.duration, 0);
+      const destination = audioContext.createMediaStreamDestination();
+      const canvasStream = canvas.captureStream(30);
+      const combinedStream = new MediaStream([
         ...canvasStream.getVideoTracks(),
-        ...audioDestination.stream.getAudioTracks(),
+        ...destination.stream.getAudioTracks(),
       ]);
-      const mimeCandidates = [
-        'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
-        'video/mp4;codecs=avc1.42E01E',
-        'video/mp4',
-        'video/webm;codecs=vp9',
-        'video/webm;codecs=vp8',
-        'video/webm',
-      ];
-      const supportedMimeTypes = mimeCandidates.filter((candidate) => MediaRecorder.isTypeSupported(candidate));
-      let recorderInstance: MediaRecorder | null = null;
-      for (const candidate of supportedMimeTypes) {
-        try {
-          recorderInstance = new MediaRecorder(combinedStream, { mimeType: candidate });
-          break;
-        } catch {
-          // Try the next browser-supported container/codec combination.
-        }
-      }
-      if (!recorderInstance) recorderInstance = new MediaRecorder(combinedStream);
-      recorder = recorderInstance;
-      const outputMimeType = recorder.mimeType || supportedMimeTypes[0] || 'video/webm';
-      const chunks: BlobPart[] = [];
-      recorder.ondataavailable = (event) => { if (event.data.size) chunks.push(event.data); };
-      const finished = new Promise<Blob>((resolve, reject) => {
-        if (!recorder) return reject(new Error('Video recorder could not start.'));
-        recorder.onerror = () => reject(new Error('Video encoding failed.'));
-        recorder.onstop = () => resolve(new Blob(chunks, { type: outputMimeType }));
+
+      const mimeType = MediaRecorder.isTypeSupported('video/mp4;codecs=avc1,mp4a.40.2')
+        ? 'video/mp4;codecs=avc1,mp4a.40.2'
+        : MediaRecorder.isTypeSupported('video/mp4')
+        ? 'video/mp4'
+        : 'video/webm;codecs=vp9,opus';
+
+      const recorder = new MediaRecorder(combinedStream, { mimeType });
+      const chunks: Blob[] = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data && e.data.size > 0) chunks.push(e.data);
+      };
+
+      const renderDone = new Promise<void>((resolve) => {
+        recorder.onstop = () => {
+          const videoBlob = new Blob(chunks, { type: mimeType });
+          const url = URL.createObjectURL(videoBlob);
+          setRenderedVideoUrl(url);
+          setRenderedVideoMimeType(mimeType);
+          resolve();
+        };
       });
 
-      let audioStart = audioContext.currentTime + 0.25;
-      audioBuffers.forEach((buffer) => {
+      recorder.start();
+
+      let currentBufferTime = audioContext.currentTime;
+      for (let i = 0; i < scenes.length; i++) {
         const source = audioContext.createBufferSource();
-        source.buffer = buffer;
-        source.connect(audioDestination);
-        source.start(audioStart);
-        audioStart += buffer.duration;
-      });
-
-      recorder.start(250);
-      await new Promise((resolve) => window.setTimeout(resolve, 250));
-      const frameMs = 1000 / 30;
-      const totalDuration = audioBuffers.reduce((sum, buffer) => sum + buffer.duration, 0);
-      let renderedSeconds = 0;
-      for (let sceneIndex = 0; sceneIndex < scenes.length; sceneIndex += 1) {
-        setAvatarEmotion(scenes[sceneIndex].emotion);
-        setIsAvatarSpeaking(true);
-        const sceneDuration = audioBuffers[sceneIndex].duration;
-        const totalFrames = Math.max(1, Math.ceil(sceneDuration * 30));
-        for (let frame = 0; frame < totalFrames; frame += 1) {
-          drawScene(scenes[sceneIndex], sceneIndex, frame / 30, sceneDuration);
-          setRenderProgress(Math.min(100, Math.round(((renderedSeconds + frame / 30) / totalDuration) * 100)));
-          await new Promise((resolve) => window.setTimeout(resolve, frameMs));
-        }
-        renderedSeconds += sceneDuration;
-        setIsAvatarSpeaking(false);
+        source.buffer = audioBuffers[i];
+        source.connect(destination);
+        source.start(currentBufferTime);
+        currentBufferTime += audioBuffers[i].duration;
       }
-      recorder.stop();
-      const blob = await finished;
-      if (!blob.size) throw new Error('The browser produced an empty video file.');
-      setRenderProgress(100);
-      setRenderedVideoMimeType(blob.type || outputMimeType);
-      setRenderedVideoUrl(URL.createObjectURL(blob));
-    } catch (error) {
-      if (recorder && recorder.state !== 'inactive') recorder.stop();
-      setVideoRenderError(error instanceof Error ? error.message : 'Video rendering failed.');
-    } finally {
-      canvasStream?.getTracks().forEach((track) => track.stop());
-      combinedStream?.getTracks().forEach((track) => track.stop());
-      await audioContext.close().catch(() => undefined);
+
+      const startTime = performance.now();
+      const totalDurationMs = totalAudioDuration * 1000;
+
+      let sceneStartMs = 0;
+      for (let i = 0; i < scenes.length; i++) {
+        setAvatarEmotion(scenes[i].emotion);
+        setIsAvatarSpeaking(true);
+        const sceneDurationMs = audioBuffers[i].duration * 1000;
+        const sceneEndMs = sceneStartMs + sceneDurationMs;
+
+        while (performance.now() - startTime < sceneEndMs) {
+          const now = performance.now() - startTime;
+          const elapsedInScene = (now - sceneStartMs) / 1000;
+          drawScene(scenes[i], i, elapsedInScene, audioBuffers[i].duration);
+          const percent = 35 + Math.round(((now / totalDurationMs) * 65));
+          setRenderProgress(Math.min(99, percent));
+          await new Promise((r) => requestAnimationFrame(r));
+        }
+        sceneStartMs = sceneEndMs;
+      }
+
       setIsAvatarSpeaking(false);
-      setShowVideoStage(false);
-      avatarCanvasRef.current = null;
-      avatarModelStatusRef.current = 'idle';
-      setAvatarModelStatus('idle');
-      resolveAvatarStageRef.current = null;
+      setAvatarEmotion('neutral');
+      recorder.stop();
+      await renderDone;
+      setRenderProgress(100);
+    } catch (err) {
+      setVideoRenderError(err instanceof Error ? err.message : 'Video rendering encountered an error.');
+    } finally {
       setIsRenderingVideo(false);
+      setShowVideoStage(false);
+      void audioContext.close();
     }
   };
 
   const handleDownloadVideo = () => {
     if (!renderedVideoUrl) return;
+    const ext = renderedVideoMimeType?.includes('mp4') ? 'mp4' : 'webm';
     const link = document.createElement('a');
     link.href = renderedVideoUrl;
-    const extension = renderedVideoMimeType?.includes('mp4') ? 'mp4' : 'webm';
-    link.download = `auracraft_storyboard_${aspectRatio.replace(':', 'x')}.${extension}`;
+    link.download = `auracraft_storyboard_${aspectRatio.replace(':', '_')}_${Date.now()}.${ext}`;
     link.click();
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#0a0d14] text-slate-100 overflow-y-auto p-6 space-y-6">
+    <div className="flex-1 flex flex-col h-full bg-[#050A14] text-slate-100 overflow-y-auto p-6 space-y-6">
       {showVideoStage && (
         <div aria-hidden="true" style={{ position: 'fixed', left: '-2200px', top: 0, width: aspectRatio === '9:16' ? 720 : 1280, height: aspectRatio === '9:16' ? 1280 : 720, opacity: 0, pointerEvents: 'none', zIndex: -1 }}>
           <Viewport3D
@@ -416,52 +409,54 @@ export const VideoStudioPage: React.FC = () => {
           />
         </div>
       )}
+
       {/* Header */}
-      <div className="border-b border-[#1f293d] pb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-purple-600/20 border border-purple-500/40 rounded-xl text-purple-400">
+      <div className="border-b border-[#1A2540] pb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 bg-purple-500/15 border border-purple-500/30 rounded-2xl text-purple-400 shadow-sm shadow-purple-500/10">
             <Clapperboard className="w-6 h-6" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-white flex items-center gap-2">
-              Video Studio & Render Planner (ဗီဒီယိုဖန်တီးခန်း)
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-950 text-purple-300 border border-purple-800/40">
-                Timeline Director
+            <div className="flex items-center gap-2.5">
+              <h1 className="text-xl font-bold text-white tracking-tight">
+                Video Studio & Storyboard Director
+              </h1>
+              <span className="text-[10px] font-semibold px-2.5 py-0.5 rounded-full bg-purple-500/15 text-purple-300 border border-purple-500/30">
+                Timeline Sequencer
               </span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-0.5">
-              Draft script-to-avatar storyboard video manifests and multi-scene sequences for Narrativ Forge & Social Media.
+            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Storyboard timeline script authoring, 3D avatar viseme rendering, and manifest generation for Narrativ Forge & Social Media.
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-[#111726] border border-[#23314f] p-1 rounded-xl text-xs">
-            <button
-              onClick={() => setAspectRatio('9:16')}
-              disabled={isRenderingVideo}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                aspectRatio === '9:16'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-              9:16 Vertical (Shorts/Reels)
-            </button>
-            <button
-              onClick={() => setAspectRatio('16:9')}
-              disabled={isRenderingVideo}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-lg font-semibold transition-all ${
-                aspectRatio === '16:9'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              <Monitor className="w-3.5 h-3.5" />
-              16:9 Landscape (YouTube)
-            </button>
-          </div>
+        {/* Aspect Ratio Toggle */}
+        <div className="flex items-center gap-1 bg-[#0A0F1E] border border-[#1A2540] p-1 rounded-xl text-xs">
+          <button
+            onClick={() => setAspectRatio('9:16')}
+            disabled={isRenderingVideo}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
+              aspectRatio === '9:16'
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Smartphone className="w-3.5 h-3.5" />
+            <span>9:16 Shorts / Reels</span>
+          </button>
+          <button
+            onClick={() => setAspectRatio('16:9')}
+            disabled={isRenderingVideo}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all ${
+              aspectRatio === '16:9'
+                ? 'bg-purple-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Monitor className="w-3.5 h-3.5" />
+            <span>16:9 Landscape Widescreen</span>
+          </button>
         </div>
       </div>
 
@@ -470,14 +465,14 @@ export const VideoStudioPage: React.FC = () => {
         {/* Left: Scenes List (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
-              <Video className="w-4 h-4 text-cyan-400" />
-              Storyboard Timeline ({scenes.length} Scenes &bull; ~{totalEstimatedSeconds}s Total)
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+              <Film className="w-4 h-4 text-purple-400" />
+              Storyboard Timeline ({scenes.length} Scenes &bull; ~{totalEstimatedSeconds}s Estimated)
             </h2>
 
             <button
               onClick={addScene}
-              className="flex items-center gap-1 px-3 py-1 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/40 rounded-xl text-xs font-semibold transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-xl text-xs font-semibold transition-all active:scale-95"
             >
               <Plus className="w-3.5 h-3.5" />
               Add Scene
@@ -488,31 +483,33 @@ export const VideoStudioPage: React.FC = () => {
             {scenes.map((s, idx) => (
               <div
                 key={s.id}
-                className="bg-[#111726]/80 backdrop-blur-md border border-[#1f293d] rounded-2xl p-4 space-y-3 shadow-lg"
+                className="bg-[#0A0F1E] border border-[#1A2540] hover:border-purple-500/40 rounded-2xl p-4 space-y-3 shadow-sm transition-colors"
               >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-purple-300 flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-lg bg-purple-900/60 border border-purple-700/50 flex items-center justify-center text-[11px] text-white">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="w-5 h-5 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-[10px] font-bold text-purple-300 flex-shrink-0">
                       {idx + 1}
                     </span>
-                    {s.title}
-                  </span>
+                    <span className="text-xs font-bold text-slate-100 truncate">
+                      {s.title}
+                    </span>
+                  </div>
 
                   <div className="flex items-center gap-2">
                     <select
                       value={s.camera}
                       onChange={(e) => updateScene(s.id, 'camera', e.target.value)}
-                      className="bg-[#0a0d14] border border-[#23314f] text-[11px] text-cyan-300 rounded-lg px-2 py-1"
+                      className="bg-[#050A14] border border-[#1A2540] text-[11px] text-cyan-300 rounded-lg px-2.5 py-1 focus:outline-none focus:border-purple-500/70"
                     >
-                      <option value="bust">👔 Camera: Bust</option>
-                      <option value="face">👤 Camera: Face</option>
-                      <option value="full">🧍 Camera: Full Body</option>
+                      <option value="bust">Bust (Medium Shot)</option>
+                      <option value="face">Face (Close-Up)</option>
+                      <option value="full">Full Body (Wide Shot)</option>
                     </select>
 
                     <select
                       value={s.emotion}
                       onChange={(e) => updateScene(s.id, 'emotion', e.target.value)}
-                      className="bg-[#0a0d14] border border-[#23314f] text-[11px] text-amber-300 rounded-lg px-2 py-1"
+                      className="bg-[#050A14] border border-[#1A2540] text-[11px] text-purple-300 rounded-lg px-2.5 py-1 focus:outline-none focus:border-purple-500/70"
                     >
                       <option value="neutral">Neutral</option>
                       <option value="happy">Happy</option>
@@ -524,9 +521,10 @@ export const VideoStudioPage: React.FC = () => {
                     {scenes.length > 1 && (
                       <button
                         onClick={() => removeScene(s.id)}
-                        className="text-slate-500 hover:text-rose-400 p-1 rounded-lg transition-colors"
+                        className="text-slate-500 hover:text-rose-400 p-1 rounded-lg transition-colors hover:bg-rose-950/20"
+                        title="Remove scene"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
@@ -536,8 +534,8 @@ export const VideoStudioPage: React.FC = () => {
                   rows={2}
                   value={s.script}
                   onChange={(e) => updateScene(s.id, 'script', e.target.value)}
-                  placeholder="Type dialogue for this scene..."
-                  className="w-full bg-[#0a0d14] border border-[#23314f] rounded-xl p-2.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-purple-500"
+                  placeholder="Type dialogue narration for this scene..."
+                  className="w-full bg-[#050A14] border border-[#1A2540] rounded-xl p-3 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-purple-500/70 leading-relaxed font-sans"
                 />
               </div>
             ))}
@@ -546,15 +544,15 @@ export const VideoStudioPage: React.FC = () => {
 
         {/* Right: Render Plan Output (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
-          <div className="bg-[#111726]/80 backdrop-blur-md border border-[#1f293d] p-5 rounded-2xl shadow-xl space-y-4">
-            <h2 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="bg-[#0A0F1E] border border-[#1A2540] p-5 rounded-2xl shadow-sm space-y-4">
+            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-purple-400" />
-              Render Plan Configuration
+              Director Configuration
             </h2>
 
-            <div className="space-y-3 text-xs">
+            <div className="space-y-3.5 text-xs">
               <div>
-                <label className="block text-slate-400 font-medium mb-1">Casting Actor</label>
+                <label className="block text-slate-300 font-semibold mb-1.5">Casting Actor</label>
                 <select
                   value={selectedCharacterId}
                   onChange={(e) => {
@@ -566,7 +564,7 @@ export const VideoStudioPage: React.FC = () => {
                       if (selected.voice_id) setVoiceId(selected.voice_id);
                     }
                   }}
-                  className="w-full bg-[#0a0d14] border border-[#23314f] rounded-xl px-3 py-2 text-slate-100 text-xs"
+                  className="w-full bg-[#050A14] border border-[#1A2540] rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-purple-500/70"
                 >
                   {availableCharacters.map((character) => (
                     <option key={character.id} value={character.id}>{character.name}</option>
@@ -576,11 +574,11 @@ export const VideoStudioPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-400 font-medium mb-1">Narration Voice (Edge-TTS)</label>
+                <label className="block text-slate-300 font-semibold mb-1.5">Narration Voice</label>
                 <select
                   value={voiceId}
                   onChange={(e) => setVoiceId(e.target.value)}
-                  className="w-full bg-[#0a0d14] border border-[#23314f] rounded-xl px-3 py-2 text-slate-100 text-xs"
+                  className="w-full bg-[#050A14] border border-[#1A2540] rounded-xl px-3 py-2 text-slate-100 text-xs focus:outline-none focus:border-purple-500/70"
                 >
                   {availableVoices.map((voice) => <option key={voice.id} value={voice.id}>{voice.name}</option>)}
                   {!availableVoices.length && <option value={voiceId}>{voiceId}</option>}
@@ -588,7 +586,7 @@ export const VideoStudioPage: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-slate-400 font-medium mb-1">Seconds Per Scene</label>
+                <label className="block text-slate-300 font-semibold mb-1.5">Seconds Per Scene</label>
                 <div className="flex items-center gap-3">
                   <input
                     type="range"
@@ -597,19 +595,20 @@ export const VideoStudioPage: React.FC = () => {
                     step="1"
                     value={durationPerScene}
                     onChange={(e) => setDurationPerScene(parseInt(e.target.value))}
-                    className="flex-1 accent-purple-500"
+                    className="flex-1 accent-purple-500 cursor-pointer"
                   />
-                  <span className="font-mono text-purple-300 font-bold w-12">{durationPerScene}s</span>
+                  <span className="font-mono text-purple-300 font-bold w-12 text-right">{durationPerScene}s</span>
                 </div>
               </div>
             </div>
 
             {generationError && <p role="alert" className="text-xs text-rose-300">{generationError}</p>}
-            <div className="pt-3 border-t border-[#1f293d] flex gap-2">
+
+            <div className="pt-3 border-t border-[#1A2540]">
               <button
                 onClick={handleGenerateManifest}
                 disabled={isGeneratingPlan}
-                className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-purple-600/25 transition-all text-center flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs shadow-md shadow-purple-600/25 transition-all text-center flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
               >
                 {isGeneratingPlan ? (
                   <>
@@ -617,32 +616,62 @@ export const VideoStudioPage: React.FC = () => {
                     <span>Creating Plan...</span>
                   </>
                 ) : (
-                  <span>Generate Plan Manifest</span>
+                  <span>Generate Plan Manifest (.json)</span>
                 )}
               </button>
             </div>
           </div>
 
-          <div className="bg-[#111726]/80 border border-[#1f293d] rounded-2xl p-5 space-y-3">
+          <div className="bg-[#0A0F1E] border border-[#1A2540] rounded-2xl p-5 space-y-3.5">
             <div>
-              <h3 className="text-sm font-bold text-white">Render narrated storyboard video</h3>
-              <p className="text-xs text-slate-400 mt-1">Browser-side 3D avatar video with Edge-TTS narration. MP4 is used when your browser supports it; otherwise WebM is used. A procedural 3D fallback appears if a selected VRM asset cannot load.</p>
+              <h3 className="text-sm font-bold text-white">Render 3D Avatar Video</h3>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Client-side hardware accelerated rendering with Edge-TTS narration. Produces MP4 or WebM video with viseme lip-sync.
+              </p>
             </div>
+
             <button
               onClick={handleRenderVideo}
               disabled={isRenderingVideo || !scenes.length}
-              className="w-full py-2.5 rounded-xl bg-cyan-700 hover:bg-cyan-600 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 disabled:opacity-50 text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
             >
-              {isRenderingVideo ? <><Loader2 className="w-4 h-4 animate-spin" /> Rendering {renderProgress}%</> : <><Play className="w-4 h-4" /> Render Video (MP4 / WebM)</>}
+              {isRenderingVideo ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Rendering Pipeline {renderProgress}%</span>
+                </>
+              ) : (
+                <>
+                  <Play className="w-4 h-4 fill-white" />
+                  <span>Render Video (MP4 / WebM)</span>
+                </>
+              )}
             </button>
-            {showVideoStage && avatarModelStatus === 'loading' && <p className="text-xs text-slate-400">Loading the selected 3D avatar…</p>}
+
+            {isRenderingVideo && (
+              <div className="w-full bg-[#050A14] h-2 rounded-full overflow-hidden border border-[#1A2540]">
+                <div
+                  className="bg-gradient-to-r from-purple-500 to-cyan-500 h-full transition-all duration-300"
+                  style={{ width: `${renderProgress}%` }}
+                />
+              </div>
+            )}
+
+            {showVideoStage && avatarModelStatus === 'loading' && (
+              <p className="text-xs text-slate-400">Loading selected 3D avatar viewport...</p>
+            )}
             {videoRenderError && <p role="alert" className="text-xs text-rose-300">{videoRenderError}</p>}
             {videoRenderNotice && <p className="text-xs text-amber-300">{videoRenderNotice}</p>}
+
             {renderedVideoUrl && (
-              <div className="space-y-2">
-                <video controls playsInline src={renderedVideoUrl} className="w-full rounded-xl border border-[#23314f]" />
-                <button onClick={handleDownloadVideo} className="w-full py-2 rounded-xl bg-emerald-700/70 hover:bg-emerald-600 text-white text-xs font-semibold flex items-center justify-center gap-2">
-                  <Download className="w-4 h-4" /> Download rendered {renderedVideoMimeType?.includes('mp4') ? 'MP4' : 'WebM'}
+              <div className="space-y-3 pt-2">
+                <video controls playsInline src={renderedVideoUrl} className="w-full rounded-xl border border-[#1A2540] bg-black" />
+                <button
+                  onClick={handleDownloadVideo}
+                  className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Rendered {renderedVideoMimeType?.includes('mp4') ? 'MP4' : 'WebM'}</span>
                 </button>
               </div>
             )}
@@ -650,22 +679,23 @@ export const VideoStudioPage: React.FC = () => {
 
           {/* Manifest JSON Preview */}
           {generatedPlan && (
-            <div className="bg-[#0a0d14] border border-[#23314f] rounded-2xl p-4 space-y-3 shadow-xl">
+            <div className="bg-[#0A0F1E] border border-[#1A2540] rounded-2xl p-4 space-y-3 shadow-sm">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-emerald-400 flex items-center gap-1">
-                  <Check className="w-3.5 h-3.5" /> Manifest Ready
+                <span className="font-semibold text-emerald-400 flex items-center gap-1.5">
+                  <Check className="w-3.5 h-3.5" />
+                  Manifest Ready
                 </span>
 
                 <button
                   onClick={handleDownloadManifest}
-                  className="flex items-center gap-1 px-3 py-1 bg-cyan-600/30 hover:bg-cyan-600/50 text-cyan-200 border border-cyan-500/40 rounded-lg text-xs font-semibold transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1 bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 border border-purple-500/30 rounded-lg text-xs font-semibold transition-all"
                 >
                   {exported ? <Check className="w-3.5 h-3.5 text-emerald-300" /> : <Download className="w-3.5 h-3.5" />}
-                  Download Manifest (.json)
+                  Download JSON
                 </button>
               </div>
 
-              <pre className="text-[10px] text-slate-300 bg-[#111726]/60 p-3 rounded-xl overflow-x-auto max-h-48 border border-[#1f293d] font-mono leading-relaxed">
+              <pre className="text-[10px] text-slate-300 bg-[#050A14] p-3 rounded-xl overflow-x-auto max-h-48 border border-[#1A2540] font-mono leading-relaxed">
                 {JSON.stringify(generatedPlan, null, 2)}
               </pre>
             </div>

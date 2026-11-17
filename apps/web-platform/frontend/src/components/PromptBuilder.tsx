@@ -3,10 +3,7 @@
  *
  * Form-based identity prompt generator.
  * Fills in character descriptors → auto-generates a structured
- * "Identity Prompt" string for AI image/video tools (Stable Diffusion,
- * Runway, Pika, Kling, etc.).
- *
- * Includes a "Copy to Clipboard" button for quick use.
+ * "Identity Prompt" string for AI image/video tools.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -59,9 +56,6 @@ const EMPTY_FORM: PromptFormState = {
   skinTone: '', outfit: '', bodyBuild: '', accessories: '', style: '', mood: '', extraDetails: '',
 };
 
-// ─────────────────────────────────────────────
-// Prompt Generator
-// ─────────────────────────────────────────────
 function buildPromptString(form: PromptFormState): string {
   const parts: string[] = [];
 
@@ -82,9 +76,7 @@ function buildPromptString(form: PromptFormState): string {
   return parts.filter(Boolean).join(', ');
 }
 
-/** Parse a prompt string back into form fields (best-effort, for existing prompts) */
 function parsePromptToForm(prompt: string): Partial<PromptFormState> {
-  // Heuristic: if prompt starts with "anime girl", "woman", etc., treat first token as gender
   const tokens = prompt.split(',').map((s) => s.trim()).filter(Boolean);
   if (!tokens.length) return {};
   return { gender: tokens[0], extraDetails: tokens.slice(1).join(', ') };
@@ -103,7 +95,6 @@ interface PromptBuilderProps {
 // ─────────────────────────────────────────────
 export const PromptBuilder: React.FC<PromptBuilderProps> = ({ character, onPromptSaved }) => {
   const [form, setForm] = useState<PromptFormState>(() => {
-    // Pre-fill from existing identity prompt if available
     if (character.identityPrompt) {
       return { ...EMPTY_FORM, ...parsePromptToForm(character.identityPrompt) };
     }
@@ -115,7 +106,6 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({ character, onPromp
   const [saved, setSaved] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Auto-generate prompt whenever form changes
   useEffect(() => {
     const prompt = buildPromptString(form);
     setGeneratedPrompt(prompt);
@@ -149,15 +139,15 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({ character, onPromp
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Wand2 className="w-4 h-4 text-indigo-400" />
-          <h3 className="text-sm font-bold text-slate-200">Identity Prompt Builder</h3>
+          <Wand2 className="w-4 h-4 text-purple-400" />
+          <h3 className="text-sm font-bold text-slate-100">Identity Prompt Builder</h3>
         </div>
         <button
           onClick={handleReset}
           className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-300 transition-colors"
         >
           <RotateCcw className="w-3 h-3" />
-          Reset
+          <span>Reset</span>
         </button>
       </div>
 
@@ -176,14 +166,14 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({ character, onPromp
               placeholder={field.placeholder}
               className="
                 w-full px-3 py-1.5
-                bg-[#111827] border border-[#1f293d]
+                bg-[#050A14] border border-[#1A2540]
                 text-slate-200 placeholder-slate-600
-                rounded-lg text-xs
-                focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30
+                rounded-xl text-xs
+                focus:outline-none focus:border-purple-500/70
                 transition-all
               "
             />
-            {field.hint && <p className="text-[10px] text-slate-600">{field.hint}</p>}
+            {field.hint && <p className="text-[10px] text-slate-500">{field.hint}</p>}
           </div>
         ))}
       </div>
@@ -191,10 +181,10 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({ character, onPromp
       {/* Generated Prompt Output */}
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-medium text-slate-400">Generated Prompt</label>
+          <label className="text-xs font-medium text-slate-400">Generated Identity Prompt</label>
           <button
             onClick={() => setIsEditing(!isEditing)}
-            className="text-[10px] text-indigo-400 hover:text-indigo-300 transition-colors"
+            className="text-[10px] text-purple-400 hover:text-purple-300 transition-colors font-medium"
           >
             {isEditing ? 'Lock' : 'Edit manually'}
           </button>
@@ -207,20 +197,20 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({ character, onPromp
             rows={4}
             className="
               w-full px-3 py-2
-              bg-[#070a12] border border-indigo-500/40
-              text-indigo-200 text-xs rounded-lg font-mono
-              focus:outline-none focus:border-indigo-400
+              bg-[#050A14] border border-purple-500/50
+              text-purple-200 text-xs rounded-xl font-mono
+              focus:outline-none focus:border-purple-400
               resize-none
             "
           />
         ) : (
           <div className="
-            px-3 py-2.5 rounded-lg bg-[#070a12]
-            border border-[#1f293d] min-h-[64px]
-            text-xs text-indigo-200 font-mono leading-relaxed
+            px-3 py-2.5 rounded-xl bg-[#050A14]
+            border border-[#1A2540] min-h-[64px]
+            text-xs text-purple-200 font-mono leading-relaxed
           ">
             {generatedPrompt || (
-              <span className="text-slate-600">Fill in the fields above to generate your identity prompt...</span>
+              <span className="text-slate-600">Fill in the fields above to generate an identity prompt...</span>
             )}
           </div>
         )}
@@ -232,15 +222,15 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({ character, onPromp
             disabled={!generatedPrompt}
             className={`
               flex-1 flex items-center justify-center gap-1.5
-              py-2 rounded-lg text-xs font-semibold transition-all
+              py-2 rounded-xl text-xs font-semibold transition-all
               ${copied
                 ? 'bg-emerald-600/30 border border-emerald-500/50 text-emerald-300'
-                : 'bg-[#111827] border border-[#1f293d] text-slate-300 hover:border-indigo-500/50 hover:text-indigo-300 disabled:opacity-40 disabled:cursor-not-allowed'
+                : 'bg-[#050A14] border border-[#1A2540] text-slate-300 hover:border-purple-500/50 hover:text-purple-300 disabled:opacity-40 disabled:cursor-not-allowed'
               }
             `}
           >
             {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            {copied ? 'Copied!' : 'Copy Prompt'}
+            <span>{copied ? 'Copied' : 'Copy Prompt'}</span>
           </button>
 
           <button
@@ -248,15 +238,15 @@ export const PromptBuilder: React.FC<PromptBuilderProps> = ({ character, onPromp
             disabled={!generatedPrompt || saved}
             className={`
               flex-1 flex items-center justify-center gap-1.5
-              py-2 rounded-lg text-xs font-semibold transition-all
+              py-2 rounded-xl text-xs font-semibold transition-all active:scale-95
               ${saved
                 ? 'bg-emerald-600/30 border border-emerald-500/50 text-emerald-300'
-                : 'bg-indigo-600 hover:bg-indigo-500 text-white disabled:opacity-40 disabled:cursor-not-allowed'
+                : 'bg-purple-600 hover:bg-purple-500 text-white shadow-md shadow-purple-600/25 disabled:opacity-40 disabled:cursor-not-allowed'
               }
             `}
           >
             {saved ? <Check className="w-3.5 h-3.5" /> : null}
-            {saved ? 'Saved!' : 'Save to Character'}
+            <span>{saved ? 'Saved' : 'Save to Persona'}</span>
           </button>
         </div>
       </div>

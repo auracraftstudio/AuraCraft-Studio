@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Upload, Camera, RefreshCw, Volume2, Zap, Heart, Star,
   MessageSquare, Sparkles, Square, Download, Smile,
-  Wand2, Image, ChevronRight, Loader2, Play, User, Trash2
+  Wand2, Image, ChevronRight, Loader2, Play, User, Trash2,
+  Meh, Frown, AlertCircle, Flame, Check
 } from 'lucide-react';
 import { API_ENDPOINTS } from '../config/api';
 import { useObjectUrl } from '../hooks/useObjectUrl';
@@ -12,37 +13,35 @@ import { limitPollinationsPrompt } from './photoAvatarUtils';
 type TabMode = 'photo' | 'prompt';
 type ExpressionId = 'neutral' | 'happy' | 'sad' | 'surprised' | 'angry';
 
-const EXPRESSIONS: { id: ExpressionId; icon: string; label: string }[] = [
-  { id: 'neutral',   icon: '😐', label: 'Neutral'   },
-  { id: 'happy',     icon: '😊', label: 'Happy'     },
-  { id: 'sad',       icon: '😢', label: 'Sad'       },
-  { id: 'surprised', icon: '😲', label: 'Surprised' },
-  { id: 'angry',     icon: '😠', label: 'Angry'     },
+const EXPRESSIONS: { id: ExpressionId; icon: React.ComponentType<{ className?: string }>; label: string }[] = [
+  { id: 'neutral',   icon: Meh,         label: 'Neutral'   },
+  { id: 'happy',     icon: Smile,       label: 'Happy'     },
+  { id: 'sad',       icon: Frown,       label: 'Sad'       },
+  { id: 'surprised', icon: AlertCircle, label: 'Surprised' },
+  { id: 'angry',     icon: Flame,       label: 'Angry'     },
 ];
 
 const VOICES = [
-  { id: 'my-MM-NilarNeural',    label: 'Nilar (နီလာ)',    lang: 'Myanmar ♀', flag: '🇲🇲' },
-  { id: 'my-MM-ThihaNeural',    label: 'Thiha (သိဟ)',     lang: 'Myanmar ♂', flag: '🇲🇲' },
-  { id: 'ja-JP-NanamiNeural',   label: 'Nanami (ナナミ)',  lang: 'Japanese ♀',flag: '🇯🇵' },
-  { id: 'ja-JP-KeitaNeural',    label: 'Keita (ケイタ)',   lang: 'Japanese ♂',flag: '🇯🇵' },
-  { id: 'en-US-JennyNeural',    label: 'Jenny',            lang: 'English ♀', flag: '🇺🇸' },
-  { id: 'en-US-GuyNeural',      label: 'Guy',              lang: 'English ♂', flag: '🇺🇸' },
-  { id: 'zh-CN-XiaoxiaoNeural', label: 'Xiaoxiao (晓晓)', lang: 'Chinese ♀', flag: '🇨🇳' },
-  { id: 'ko-KR-SunHiNeural',    label: 'SunHi (선희)',    lang: 'Korean ♀',  flag: '🇰🇷' },
+  { id: 'my-MM-NilarNeural',    label: 'Nilar (နီလာ)',    lang: 'Myanmar Female', countryCode: 'MM' },
+  { id: 'my-MM-ThihaNeural',    label: 'Thiha (သိဟ)',     lang: 'Myanmar Male',   countryCode: 'MM' },
+  { id: 'ja-JP-NanamiNeural',   label: 'Nanami (ナナミ)',  lang: 'Japanese Female',countryCode: 'JP' },
+  { id: 'ja-JP-KeitaNeural',    label: 'Keita (ケイタ)',   lang: 'Japanese Male',  countryCode: 'JP' },
+  { id: 'en-US-JennyNeural',    label: 'Jenny',            lang: 'English Female', countryCode: 'US' },
+  { id: 'en-US-GuyNeural',      label: 'Guy',              lang: 'English Male',   countryCode: 'US' },
+  { id: 'zh-CN-XiaoxiaoNeural', label: 'Xiaoxiao (晓晓)', lang: 'Chinese Female', countryCode: 'CN' },
+  { id: 'ko-KR-SunHiNeural',    label: 'SunHi (선희)',    lang: 'Korean Female',  countryCode: 'KR' },
 ];
 
 const PROMPT_STYLES = [
   { id: 'anime',      label: 'Anime',           example: 'anime girl, big eyes, colorful hair, portrait' },
   { id: 'realistic',  label: 'Realistic',       example: 'realistic portrait, professional photo, studio lighting' },
-  { id: 'myanmar',    label: 'Myanmar',         example: 'myanmar woman in traditional longyi, thanakha, portrait' },
-  { id: 'fantasy',    label: 'Fantasy',         example: 'fantasy elf character, glowing eyes, magical aura, portrait' },
+  { id: 'myanmar',    label: 'Myanmar Cultural',example: 'myanmar woman in traditional longyi, thanakha, portrait' },
+  { id: 'fantasy',    label: 'Fantasy Art',     example: 'fantasy elf character, glowing eyes, magical aura, portrait' },
   { id: 'cyberpunk',  label: 'Cyberpunk',       example: 'cyberpunk girl, neon lights, futuristic city, portrait' },
-  { id: 'chibi',      label: 'Chibi / Cute',    example: 'chibi character, cute, big head, colorful, portrait' },
+  { id: 'chibi',      label: 'Chibi Stylized',  example: 'chibi character, cute, big head, colorful, portrait' },
 ];
 
 // ─── Canvas Talking-Face Renderer ─────────────────────────────────────────────
-// Uses face-region warp: top 60% drawn normal, bottom 40% (jaw/mouth) stretched 
-// vertically based on speech amplitude. This creates convincing lip-sync without AI.
 function renderTalkingFace(
   canvas: HTMLCanvasElement,
   img: HTMLImageElement,
@@ -61,26 +60,20 @@ function renderTalkingFace(
   ctx.translate(W / 2, H / 2);
   ctx.rotate((tilt * Math.PI) / 180);
 
-  // ─── Draw face with mouth-warp technique ───────────────────────────────────
-  // Split image: upper 65% (forehead→nose) drawn normally
-  // Lower 35% (mouth→chin) stretched slightly open
-  const splitY = H * 0.63; // pivot line just above mouth
-  const stretch = mouthOpen * H * 0.06; // max ~6% height stretch
+  const splitY = H * 0.63;
+  const stretch = mouthOpen * H * 0.06;
 
-  // Upper portion (normal)
+  // Upper portion
   ctx.drawImage(img, 0, 0, W, splitY, -W / 2, -H / 2, W, splitY);
 
-  // Lower portion (stretched downward = jaw drops open)
+  // Lower portion
   ctx.drawImage(img, 0, splitY, W, H - splitY, -W / 2, -H / 2 + splitY + stretch * 0.5, W, H - splitY + stretch);
 
-  // ─── Fill the gap between upper & lower (mouth-open gap) ──────────────────
   if (mouthOpen > 0.05) {
     const gapY = -H / 2 + splitY;
     const gapH = stretch * 0.5;
-    // Sample color from just above split to fill naturally
     ctx.drawImage(img, 0, splitY - 4, W, 4, -W / 2, gapY, W, gapH);
 
-    // Dark mouth cavity
     const mouthX = -W * 0.12;
     const mouthW = W * 0.24;
     const cavityY = gapY + gapH * 0.1;
@@ -94,7 +87,6 @@ function renderTalkingFace(
     ctx.fillStyle = mouthGrad;
     ctx.fill();
 
-    // Teeth hint
     if (mouthOpen > 0.25) {
       ctx.beginPath();
       ctx.ellipse(0, cavityY + cavityH * 0.3, mouthW * 0.3, cavityH * 0.3, 0, 0, Math.PI);
@@ -105,7 +97,7 @@ function renderTalkingFace(
 
   ctx.restore();
 
-  // ─── Blink overlay ────────────────────────────────────────────────────────
+  // Blink overlay
   if (blinkAmt > 0.05) {
     const eyeY = H * 0.37;
     const eyeSpacing = W * 0.145;
@@ -113,7 +105,6 @@ function renderTalkingFace(
     const eyeRH = H * 0.028 * blinkAmt;
     ctx.save();
     for (const ex of [-eyeSpacing, eyeSpacing]) {
-      // Sample eyelid color from photo
       ctx.beginPath();
       ctx.ellipse(W / 2 + ex, eyeY, eyeRW, eyeRH, 0, 0, Math.PI * 2);
       ctx.fillStyle = `rgba(10,5,15,${0.85 * blinkAmt})`;
@@ -122,7 +113,7 @@ function renderTalkingFace(
     ctx.restore();
   }
 
-  // ─── Expression tint ──────────────────────────────────────────────────────
+  // Expression tint
   const tints: Record<ExpressionId, string> = {
     neutral:   'transparent',
     happy:     'rgba(250,220,100,0.07)',
@@ -135,7 +126,7 @@ function renderTalkingFace(
     ctx.fillRect(0, 0, W, H);
   }
 
-  // ─── Speaking glow ring ───────────────────────────────────────────────────
+  // Speaking glow
   if (mouthOpen > 0.08) {
     const glowAlpha = mouthOpen * 0.35;
     const gradient = ctx.createRadialGradient(W / 2, H * 0.75, 0, W / 2, H * 0.75, W * 0.45);
@@ -151,10 +142,9 @@ function renderTalkingFace(
 export const PhotoAvatarPage: React.FC = () => {
   const [tab, setTab] = useState<TabMode>('photo');
 
-  // ── Photo Mode State ──
+  // Photo Mode State
   const [photoBlob, setPhotoBlob] = useState<Blob | null>(null);
   const [generatedPhotoUrl, setGeneratedPhotoUrl] = useState<string | null>(null);
-  // FIX(audit-3-A): uploaded image URLs are created lazily and revoked by the hook.
   const uploadedPhotoUrl = useObjectUrl(photoBlob);
   const photoUrl = generatedPhotoUrl || uploadedPhotoUrl;
   const [photoName, setPhotoName]     = useState('');
@@ -169,7 +159,7 @@ export const PhotoAvatarPage: React.FC = () => {
   const [pitch, setPitch]             = useState(1.0);
   const [text, setText]               = useState('မင်္ဂလာပါ! ကျွန်မနာမည်က AuraCraft AI Photo Avatar ပါ။ ကြိုဆိုပါတယ်!');
 
-  // ── Prompt Mode State ──
+  // Prompt Mode State
   const [promptText, setPromptText]       = useState('');
   const [promptStyle, setPromptStyle]     = useState('anime');
   const [promptNegative, setPromptNegative] = useState('blur, watermark, low quality, deformed');
@@ -178,7 +168,7 @@ export const PhotoAvatarPage: React.FC = () => {
   const [promptSpeaking, setPromptSpeaking]   = useState(false);
   const [promptText2, setPromptText2]     = useState('');
 
-  // ── Refs ──
+  // Refs
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const imgRef       = useRef<HTMLImageElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -189,7 +179,7 @@ export const PhotoAvatarPage: React.FC = () => {
   const nextBlinkRef = useRef(3.0);
   const nextTiltRef  = useRef(5.0);
 
-  // ─── Animation Loop ──────────────────────────────────────────────────────
+  // Animation Loop
   useEffect(() => {
     if (!photoUrl || !canvasRef.current) return;
 
@@ -201,7 +191,6 @@ export const PhotoAvatarPage: React.FC = () => {
       const dt = Math.min((now - lastTime) / 1000, 0.05);
       lastTime = now;
 
-      // Mouth from analyser
       if (analyserRef.current) {
         const buf = new Uint8Array(analyserRef.current.frequencyBinCount);
         analyserRef.current.getByteFrequencyData(buf);
@@ -211,7 +200,6 @@ export const PhotoAvatarPage: React.FC = () => {
         mouth = Math.max(mouth - dt * 8, 0);
       }
 
-      // Blink
       blinkTimer += dt;
       if (blinkTimer >= nextBlinkRef.current) {
         blinkTimer = 0;
@@ -220,7 +208,6 @@ export const PhotoAvatarPage: React.FC = () => {
       const bp = blinkTimer / 0.14;
       blink = bp < 1 ? Math.sin(bp * Math.PI) : 0;
 
-      // Head tilt drift
       tiltTimer += dt;
       if (tiltTimer >= nextTiltRef.current) {
         tiltTimer = 0;
@@ -242,13 +229,11 @@ export const PhotoAvatarPage: React.FC = () => {
     return () => cancelAnimationFrame(animRef.current);
   }, [photoUrl, expression]);
 
-  // ─── Load Photo ──────────────────────────────────────────────────────────
   const loadPhoto = useCallback((file: File) => {
-    // FIX(audit-3-A): keep the Blob as state; useObjectUrl owns URL creation and cleanup.
     setGeneratedPhotoUrl(null);
     setPhotoBlob(file);
     setPhotoName(file.name);
-    setStatusMsg('✅ ပုံ load ပြီး — Generate & Speak နှိပ်ပါ');
+    setStatusMsg('Image loaded successfully');
   }, []);
 
   useEffect(() => {
@@ -271,7 +256,6 @@ export const PhotoAvatarPage: React.FC = () => {
     if (f?.type.startsWith('image/')) loadPhoto(f);
   };
 
-  // ─── TTS + Lip-Sync ──────────────────────────────────────────────────────
   const playSpeech = async (url: string, onEnd: () => void) => {
     if (!audioCtxRef.current) audioCtxRef.current = new AudioContext();
     const actx = audioCtxRef.current;
@@ -292,10 +276,10 @@ export const PhotoAvatarPage: React.FC = () => {
 
   const handleGenerate = async (speakUrl?: string | null, forPhoto = true) => {
     const speakText = forPhoto ? text : promptText2;
-    if (!speakText.trim()) { setStatusMsg('⚠️ စာသားရိုက်ပါ'); return; }
+    if (!speakText.trim()) { setStatusMsg('Please enter dialogue text'); return; }
 
     if (forPhoto) setIsGenerating(true); else setPromptSpeaking(true);
-    setStatusMsg('🎙️ TTS generating...');
+    setStatusMsg('Synthesizing speech via Edge-TTS...');
 
     try {
       const res = await fetch(API_ENDPOINTS.tts, {
@@ -314,14 +298,13 @@ export const PhotoAvatarPage: React.FC = () => {
       setAudioUrl(url);
       if (forPhoto) {
         setIsSpeaking(true);
-        await playSpeech(url, () => { setIsSpeaking(false); setIsGenerating(false); setStatusMsg('✅ ပြီးပါပြီ'); });
+        await playSpeech(url, () => { setIsSpeaking(false); setIsGenerating(false); setStatusMsg('Playback complete'); });
       } else {
         setPromptSpeaking(true);
-        await playSpeech(url, () => { setPromptSpeaking(false); setStatusMsg('✅ ပြီးပါပြီ'); });
+        await playSpeech(url, () => { setPromptSpeaking(false); setStatusMsg('Playback complete'); });
       }
     } catch {
-      // Fallback Web Speech
-      setStatusMsg('⚡ Browser TTS fallback...');
+      setStatusMsg('Browser Web Speech synthesis active...');
       const utt = new SpeechSynthesisUtterance(speakText);
       utt.rate = rate; utt.pitch = pitch;
       if (forPhoto) setIsSpeaking(true); else setPromptSpeaking(true);
@@ -339,7 +322,7 @@ export const PhotoAvatarPage: React.FC = () => {
         if (interval) clearInterval(interval);
         if (forPhoto) { setIsSpeaking(false); setIsGenerating(false); }
         else setPromptSpeaking(false);
-        setStatusMsg('✅ ပြီး');
+        setStatusMsg('Complete');
       };
       speechSynthesis.speak(utt);
     }
@@ -352,18 +335,17 @@ export const PhotoAvatarPage: React.FC = () => {
     setIsSpeaking(false);
     setPromptSpeaking(false);
     setIsGenerating(false);
-    setStatusMsg('⏹️ ရပ်ပြီ');
+    setStatusMsg('Playback stopped');
   };
 
-  // ─── Prompt Image Generation (Pollinations.ai — Free) ───────────────────
   const handlePromptGenerate = async () => {
     const style = PROMPT_STYLES.find(s => s.id === promptStyle);
     const fullPrompt = limitPollinationsPrompt(`${promptText}, ${style?.example ?? ''}, high quality, detailed face, portrait`);
-    if (!promptText.trim()) { setStatusMsg('⚠️ Prompt ရိုက်ပါ'); return; }
+    if (!promptText.trim()) { setStatusMsg('Please enter prompt text'); return; }
 
     setIsPromptLoading(true);
     setGeneratedImgUrl(null);
-    setStatusMsg('🎨 AI image generating (Pollinations.ai)...');
+    setStatusMsg('AI avatar generating...');
 
     const encoded = encodeURIComponent(fullPrompt);
     const neg = encodeURIComponent(promptNegative);
@@ -374,69 +356,80 @@ export const PhotoAvatarPage: React.FC = () => {
       const img = new window.Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
-        imgRef.current = img;        // Also set for lip-sync if user switches to photo mode
+        imgRef.current = img;
         setGeneratedImgUrl(url);
         setIsPromptLoading(false);
-        setStatusMsg('✅ AI Avatar ထွက်ပါပြီ — Generate & Speak နှိပ်ပါ');
-        setGeneratedPhotoUrl(url);   // FIX(audit-3-A): generated remote URL is not a persisted Blob URL.
+        setStatusMsg('Avatar generated. Click Generate & Speak.');
+        setGeneratedPhotoUrl(url);
       };
       img.onerror = () => {
         setIsPromptLoading(false);
-        setStatusMsg('❌ Generation failed — ထပ်ကြိုးစားပါ');
+        setStatusMsg('Generation failed, please retry');
       };
       img.src = url;
     } catch {
       setIsPromptLoading(false);
-      setStatusMsg('❌ Error');
+      setStatusMsg('Error encountered');
     }
   };
 
-  // ─── Shared Controls Panel ───────────────────────────────────────────────
+  // Shared Controls Panel
   const ControlsPanel = ({ forPhoto = true }: { forPhoto?: boolean }) => (
-    <aside className="w-72 border-l border-[#1f293d] bg-[#0c101c]/95 flex flex-col p-3 gap-3 overflow-y-auto flex-shrink-0">
-
+    <aside className="w-80 border-l border-[#1A2540] bg-[#0A0F1E] flex flex-col p-4 gap-4 overflow-y-auto flex-shrink-0">
       {/* Expression (photo mode only) */}
       {forPhoto && (
-        <div className="bg-[#111726] rounded-xl border border-[#1f293d] p-3">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+        <div className="bg-[#050A14] rounded-xl border border-[#1A2540] p-3.5">
+          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
             <Smile className="w-3.5 h-3.5 text-purple-400" />
-            Expression (မျက်နှာဟန်)
+            Facial Expression (မျက်နှာဟန်)
           </div>
-          <div className="grid grid-cols-5 gap-1">
-            {EXPRESSIONS.map(e => (
-              <button key={e.id} onClick={() => setExpression(e.id)}
-                title={e.label}
-                className={`flex flex-col items-center gap-0.5 py-2 rounded-lg text-xl transition-all ${
-                  expression === e.id
-                    ? 'bg-purple-700/40 border border-purple-500/60'
-                    : 'bg-[#0a0d14] border border-[#1f293d] hover:border-purple-500/40'
-                }`}>
-                {e.icon}
-                <span className="text-[9px] text-slate-500">{e.id}</span>
-              </button>
-            ))}
+          <div className="grid grid-cols-5 gap-1.5">
+            {EXPRESSIONS.map(e => {
+              const IconComp = e.icon;
+              const isSelected = expression === e.id;
+              return (
+                <button 
+                  key={e.id} 
+                  onClick={() => setExpression(e.id)}
+                  title={e.label}
+                  className={`flex flex-col items-center gap-1 py-2 rounded-lg transition-all ${
+                    isSelected
+                      ? 'bg-purple-600/25 border border-purple-500/70 text-purple-300'
+                      : 'bg-[#0A0F1E] border border-[#1A2540] text-slate-400 hover:border-purple-500/40'
+                  }`}
+                >
+                  <IconComp className="w-4 h-4" />
+                  <span className="text-[9px] font-medium">{e.id}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
 
       {/* Voice */}
-      <div className="bg-[#111726] rounded-xl border border-[#1f293d] p-3">
-        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
-          Voice (Edge-TTS — Zero Cost)
+      <div className="bg-[#050A14] rounded-xl border border-[#1A2540] p-3.5">
+        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+          <Volume2 className="w-3.5 h-3.5 text-purple-400" />
+          Neural Voice (Zero-Cost TTS)
         </div>
-        <div className="grid grid-cols-2 gap-1">
+        <div className="grid grid-cols-2 gap-1.5">
           {VOICES.map(v => (
-            <button key={v.id} onClick={() => setSelectedVoice(v.id)}
-              className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-[11px] transition-all text-left ${
+            <button 
+              key={v.id} 
+              onClick={() => setSelectedVoice(v.id)}
+              className={`flex items-center gap-2 px-2.5 py-2 rounded-lg text-[11px] transition-all text-left ${
                 selectedVoice === v.id
-                  ? 'bg-cyan-700/30 border border-cyan-500/60 text-cyan-300'
-                  : 'bg-[#0a0d14] border border-[#1f293d] text-slate-400 hover:border-cyan-500/30'
-              }`}>
-              <span>{v.flag}</span>
-              <div>
-                <div className="font-medium leading-none">{v.label}</div>
-                <div className="text-[9px] text-slate-500">{v.lang}</div>
+                  ? 'bg-purple-600/20 border border-purple-500/70 text-purple-300'
+                  : 'bg-[#0A0F1E] border border-[#1A2540] text-slate-400 hover:border-purple-500/30'
+              }`}
+            >
+              <span className="w-6 h-6 rounded-md bg-[#050A14] border border-[#1A2540] flex items-center justify-center font-bold text-[9px] text-slate-300">
+                {v.countryCode}
+              </span>
+              <div className="min-w-0">
+                <div className="font-semibold leading-none truncate text-slate-200">{v.label}</div>
+                <div className="text-[9px] text-slate-500 mt-0.5 truncate">{v.lang}</div>
               </div>
             </button>
           ))}
@@ -444,174 +437,210 @@ export const PhotoAvatarPage: React.FC = () => {
       </div>
 
       {/* Rate / Pitch */}
-      <div className="bg-[#111726] rounded-xl border border-[#1f293d] p-3 space-y-3">
-        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+      <div className="bg-[#050A14] rounded-xl border border-[#1A2540] p-3.5 space-y-3">
+        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
           <Zap className="w-3.5 h-3.5 text-amber-400" />
-          Voice Controls
+          Acoustic Voice Tuning
         </div>
         <div>
-          <div className="flex justify-between text-[10px] text-slate-500 mb-1">
-            <span>Rate (အမြန်)</span><span className="text-amber-400">{rate.toFixed(1)}x</span>
+          <div className="flex justify-between text-[11px] text-slate-400 mb-1 font-medium">
+            <span>Speaking Rate</span>
+            <span className="text-purple-300 font-mono font-semibold">{rate.toFixed(1)}x</span>
           </div>
-          <input type="range" min={0.5} max={2.0} step={0.1} value={rate}
+          <input 
+            type="range" 
+            min={0.5} 
+            max={2.0} 
+            step={0.1} 
+            value={rate}
             onChange={e => setRate(Number(e.target.value))}
-            className="w-full h-1.5 accent-amber-500 cursor-pointer" />
+            className="w-full h-1.5 accent-purple-500 cursor-pointer" 
+          />
         </div>
         <div>
-          <div className="flex justify-between text-[10px] text-slate-500 mb-1">
-            <span>Pitch (အသံ)</span><span className="text-purple-400">{pitch.toFixed(1)}x</span>
+          <div className="flex justify-between text-[11px] text-slate-400 mb-1 font-medium">
+            <span>Pitch Scale</span>
+            <span className="text-cyan-400 font-mono font-semibold">{pitch.toFixed(1)}x</span>
           </div>
-          <input type="range" min={0.5} max={2.0} step={0.1} value={pitch}
+          <input 
+            type="range" 
+            min={0.5} 
+            max={2.0} 
+            step={0.1} 
+            value={pitch}
             onChange={e => setPitch(Number(e.target.value))}
-            className="w-full h-1.5 accent-purple-500 cursor-pointer" />
+            className="w-full h-1.5 accent-cyan-500 cursor-pointer" 
+          />
         </div>
       </div>
 
       {/* Script */}
-      <div className="bg-[#111726] rounded-xl border border-[#1f293d] p-3">
-        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-          <MessageSquare className="w-3.5 h-3.5 text-green-400" />
-          Script (ပြောဆိုစာ)
+      <div className="bg-[#050A14] rounded-xl border border-[#1A2540] p-3.5">
+        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+          <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+          Dialogue Script (ပြောဆိုစာ)
         </div>
         <textarea
           value={forPhoto ? text : promptText2}
           onChange={e => forPhoto ? setText(e.target.value) : setPromptText2(e.target.value)}
           rows={4}
-          placeholder="Avatar ပြောစေချင်တဲ့ စာသား..."
-          className="w-full bg-[#0a0d14] border border-[#1f293d] rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-purple-500/60"
+          placeholder="Type dialogue for the avatar to speak..."
+          className="w-full bg-[#0A0F1E] border border-[#1A2540] focus:border-purple-500/70 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none transition-colors leading-relaxed"
         />
       </div>
 
-      {/* Action */}
-      <div className="space-y-2">
+      {/* Action Buttons */}
+      <div className="space-y-2 pt-1">
         <button
           onClick={() => {
             if (isSpeaking || promptSpeaking) handleStop();
             else handleGenerate(null, forPhoto);
           }}
           disabled={isGenerating || isPromptLoading || (!photoUrl && forPhoto) || (!generatedImgUrl && !forPhoto && tab === 'prompt')}
-          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-lg ${
+          className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-xs transition-all shadow-md active:scale-95 ${
             isSpeaking || promptSpeaking
-              ? 'bg-red-600 hover:bg-red-700 text-white'
+              ? 'bg-rose-600 hover:bg-rose-500 text-white'
               : isGenerating
-              ? 'bg-purple-800/40 text-purple-300 cursor-not-allowed'
+              ? 'bg-purple-900/40 text-purple-300 cursor-not-allowed border border-purple-500/30'
               : !photoUrl && forPhoto
-              ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
-              : 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white shadow-purple-900/40 hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]'
-          }`}>
-          {isSpeaking || promptSpeaking
-            ? <><Square className="w-4 h-4" /> Stop</>
-            : isGenerating
-            ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating...</>
-            : <><Sparkles className="w-4 h-4" /> Generate &amp; Speak (ပြောဆိုပါ)</>
-          }
+              ? 'bg-[#121B30] text-slate-600 cursor-not-allowed border border-[#1A2540]'
+              : 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/30'
+          }`}
+        >
+          {isSpeaking || promptSpeaking ? (
+            <>
+              <Square className="w-4 h-4 fill-white" />
+              <span>Stop Speaking</span>
+            </>
+          ) : isGenerating ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Synthesizing...</span>
+            </>
+          ) : (
+            <>
+              <Sparkles className="w-4 h-4" />
+              <span>Generate & Speak</span>
+            </>
+          )}
         </button>
 
         {audioUrl && (
-          <button onClick={() => { const a = document.createElement('a'); a.href = audioUrl; a.download = `auracraft_${Date.now()}.mp3`; a.click(); }}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#111726] border border-[#1f293d] text-slate-300 hover:border-cyan-500/50 text-sm transition-all">
-            <Download className="w-4 h-4" /> Audio Download (MP3)
+          <button 
+            onClick={() => { const a = document.createElement('a'); a.href = audioUrl; a.download = `auracraft_${Date.now()}.mp3`; a.click(); }}
+            className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-[#050A14] border border-[#1A2540] text-slate-300 hover:text-white hover:border-purple-500/50 text-xs transition-all font-medium"
+          >
+            <Download className="w-4 h-4 text-purple-400" />
+            <span>Download Speech (.mp3)</span>
           </button>
         )}
       </div>
 
-      {/* Features card */}
-      <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/10 rounded-xl border border-purple-700/30 p-3 text-xs text-slate-400 space-y-1">
-        <div className="font-semibold text-purple-300 flex items-center gap-1.5">
-          <Heart className="w-3.5 h-3.5" /> Photo Avatar Features
+      {/* Feature Capability Highlights */}
+      <div className="bg-[#050A14] rounded-xl border border-[#1A2540] p-3 text-xs text-slate-400 space-y-1.5">
+        <div className="font-semibold text-purple-300 flex items-center gap-1.5 text-[11px]">
+          <Heart className="w-3.5 h-3.5 text-purple-400" />
+          Engine Capabilities
         </div>
-        <ul className="space-y-0.5 text-[11px]">
-          <li>✅ Face jaw-drop warp (realistic open mouth)</li>
-          <li>✅ Web Audio FFT lip-sync</li>
-          <li>✅ Auto-blink every 2–4s</li>
-          <li>✅ Subtle head tilt drift</li>
-          <li>✅ 5 expression tints</li>
-          <li>✅ 8 voices, zero cost</li>
+        <ul className="space-y-1 text-[10px]">
+          <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-400" /> Real-time jaw warp lip-sync</li>
+          <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-400" /> Web Audio FFT frequency sync</li>
+          <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-400" /> Procedural blinking & natural tilt drift</li>
+          <li className="flex items-center gap-1.5"><Check className="w-3 h-3 text-emerald-400" /> Multilingual neural speech synthesis</li>
         </ul>
       </div>
     </aside>
   );
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col h-full w-full overflow-hidden bg-[#070a12]">
-
-      {/* ── Sub-tab bar ── */}
-      <div className="flex-shrink-0 h-11 bg-[#0d121f] border-b border-[#1f293d] flex items-center px-4 gap-2">
+    <div className="flex flex-col h-full w-full overflow-hidden bg-[#050A14]">
+      {/* Sub-tab navigation */}
+      <div className="flex-shrink-0 h-12 bg-[#0A0F1E] border-b border-[#1A2540] flex items-center px-4 gap-2">
         <button
           onClick={() => setTab('photo')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             tab === 'photo'
-              ? 'bg-purple-600/30 border border-purple-500/60 text-purple-300'
-              : 'text-slate-500 hover:text-slate-200'
-          }`}>
+              ? 'bg-purple-600/20 border border-purple-500/60 text-purple-300'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
           <Camera className="w-3.5 h-3.5" />
-          📷 Photo Avatar (ပုံတင်ပြီး ပြောဆိုရန်)
+          <span>Upload Photo Avatar</span>
         </button>
+
         <button
           onClick={() => setTab('prompt')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
             tab === 'prompt'
-              ? 'bg-pink-600/30 border border-pink-500/60 text-pink-300'
-              : 'text-slate-500 hover:text-slate-200'
-          }`}>
+              ? 'bg-purple-600/20 border border-purple-500/60 text-purple-300'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
           <Wand2 className="w-3.5 h-3.5" />
-          ✨ Prompt Avatar (AI ဖန်တီးပြီး ပြောဆိုရန်)
+          <span>AI Generative Avatar</span>
         </button>
 
         {statusMsg && (
-          <div className="ml-auto text-[11px] text-slate-400 bg-[#111726] border border-[#1f293d] px-3 py-1 rounded-lg">
+          <div className="ml-auto text-[11px] text-slate-300 bg-[#050A14] border border-[#1A2540] px-3 py-1 rounded-lg">
             {statusMsg}
           </div>
         )}
       </div>
 
-      {/* ── Tab: Photo ── */}
+      {/* Tab: Photo */}
       {tab === 'photo' && (
         <div className="flex flex-1 overflow-hidden">
           {/* Stage */}
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-[#0a0d14] to-[#07080f] relative p-4">
-
+          <div className="flex-1 flex items-center justify-center bg-[#050A14] relative p-4">
             {photoUrl ? (
               <div className="flex flex-col items-center gap-3">
-                {/* Speaking ring */}
                 {isSpeaking && (
                   <div className="absolute rounded-2xl animate-ping border-2 border-purple-400/25 w-[320px] h-[420px] pointer-events-none" />
                 )}
 
-                <div className={`relative rounded-2xl overflow-hidden border-2 shadow-2xl transition-all ${
-                  isSpeaking
-                    ? 'border-purple-500 shadow-[0_0_40px_rgba(168,85,247,0.4)]'
-                    : 'border-[#1f293d]'
-                }`} style={{ width: 300, height: 400 }}>
+                <div 
+                  className={`relative rounded-2xl overflow-hidden border-2 shadow-2xl transition-all ${
+                    isSpeaking
+                      ? 'border-purple-500 shadow-[0_0_40px_rgba(168,85,247,0.35)]'
+                      : 'border-[#1A2540]'
+                  }`} 
+                  style={{ width: 300, height: 400 }}
+                >
                   <canvas ref={canvasRef} width={300} height={400} className="block w-full h-full" />
 
                   {isSpeaking && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-purple-600/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-white text-[10px] font-bold animate-pulse">
+                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-purple-600/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-white text-[10px] font-bold animate-pulse">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                       SPEAKING
                     </div>
                   )}
-                  <div className="absolute bottom-2 left-2 bg-[#111726]/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] text-slate-300 border border-[#1f293d]">
-                    {EXPRESSIONS.find(e => e.id === expression)?.icon} {expression} • jaw-warp lip-sync
+
+                  <div className="absolute bottom-2.5 left-2.5 bg-[#0A0F1E]/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-[10px] text-slate-300 border border-[#1A2540] flex items-center gap-1.5">
+                    <span className="capitalize text-purple-300 font-semibold">{expression}</span>
+                    <span className="text-slate-500">•</span>
+                    <span>Jaw-Warp Lip-Sync</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111726] border border-[#1f293d] text-slate-400 hover:text-slate-200 hover:border-purple-500/50 text-xs transition-all">
+                  <button 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0A0F1E] border border-[#1A2540] text-slate-300 hover:text-white hover:border-purple-500/50 text-xs transition-all font-medium"
+                  >
                     <RefreshCw className="w-3.5 h-3.5" />
-                    ပုံပြောင်းရန်
+                    <span>Change Photo</span>
                   </button>
 
-                  <button onClick={() => {
-                    setPhotoBlob(null);
-                    setGeneratedPhotoUrl(null);
-                    setStatusMsg('🗑️ ဓာတ်ပုံကို ဖျက်ပြီးပါပြီ');
-                  }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/40 border border-rose-500/40 text-rose-300 hover:bg-rose-900/60 text-xs transition-all shadow-sm">
+                  <button 
+                    onClick={() => {
+                      setPhotoBlob(null);
+                      setGeneratedPhotoUrl(null);
+                      setStatusMsg('Photo cleared');
+                    }}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-950/20 border border-rose-500/30 text-rose-300 hover:bg-rose-950/40 text-xs transition-all font-medium"
+                  >
                     <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                    ပုံဖျက်မည်
+                    <span>Remove</span>
                   </button>
                 </div>
               </div>
@@ -622,24 +651,25 @@ export const PhotoAvatarPage: React.FC = () => {
                 onDragLeave={() => setIsDragging(false)}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
-                className={`flex flex-col items-center justify-center gap-5 cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-300 ${
+                className={`flex flex-col items-center justify-center gap-4 cursor-pointer rounded-2xl border-2 border-dashed transition-all duration-300 ${
                   isDragging
-                    ? 'border-purple-500 bg-purple-900/20 shadow-[0_0_30px_rgba(168,85,247,0.2)]'
-                    : 'border-[#2a3756] bg-[#0c111e]/60 hover:border-purple-600/50 hover:bg-purple-900/10'
+                    ? 'border-purple-500 bg-purple-900/10 shadow-[0_0_30px_rgba(168,85,247,0.2)]'
+                    : 'border-[#1A2540] bg-[#0A0F1E] hover:border-purple-500/50 hover:bg-[#0E1528]'
                 }`}
-                style={{ width: 300, height: 400 }}>
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-900/60 to-pink-900/40 flex items-center justify-center border border-purple-700/30">
-                  <Upload className="w-7 h-7 text-purple-400" />
+                style={{ width: 320, height: 420 }}
+              >
+                <div className="w-16 h-16 rounded-2xl bg-purple-500/15 flex items-center justify-center border border-purple-500/30 text-purple-400">
+                  <Upload className="w-7 h-7" />
                 </div>
-                <div className="text-center space-y-1.5">
-                  <div className="text-base font-bold text-slate-300">ပုံတင်ပါ</div>
-                  <div className="text-xs text-slate-500">မိမိ၏ ဓာတ်ပုံ upload လုပ်ပါ</div>
-                  <div className="text-[11px] text-slate-600">JPG · PNG · WEBP — Drag & Drop</div>
+                <div className="text-center space-y-1">
+                  <div className="text-sm font-bold text-slate-100">Upload Portrait Photo</div>
+                  <div className="text-xs text-slate-400">Drag & drop your face photo here</div>
+                  <div className="text-[10px] text-slate-500">Supports JPG, PNG, WEBP (Clear Face Frontal)</div>
                 </div>
-                <div className="flex items-center gap-4 text-[11px] text-slate-500">
-                  <span className="flex items-center gap-1"><Camera className="w-3 h-3 text-purple-400" /> Selfie</span>
-                  <span className="flex items-center gap-1"><Star className="w-3 h-3 text-pink-400" /> Cosplay</span>
-                  <span className="flex items-center gap-1"><User className="w-3 h-3 text-cyan-400" /> Portrait</span>
+                <div className="flex items-center gap-3 text-[11px] text-slate-400 pt-2 border-t border-[#1A2540]">
+                  <span className="flex items-center gap-1"><Camera className="w-3.5 h-3.5 text-purple-400" /> Frontal</span>
+                  <span className="flex items-center gap-1"><Star className="w-3.5 h-3.5 text-cyan-400" /> High-Res</span>
+                  <span className="flex items-center gap-1"><User className="w-3.5 h-3.5 text-emerald-400" /> Portrait</span>
                 </div>
               </div>
             )}
@@ -651,73 +681,84 @@ export const PhotoAvatarPage: React.FC = () => {
         </div>
       )}
 
-      {/* ── Tab: Prompt ── */}
+      {/* Tab: Prompt */}
       {tab === 'prompt' && (
         <div className="flex flex-1 overflow-hidden">
           {/* Stage */}
-          <div className="flex-1 flex items-center justify-center bg-gradient-to-b from-[#0a0d14] to-[#07080f] relative p-4">
-
+          <div className="flex-1 flex items-center justify-center bg-[#050A14] relative p-4">
             {generatedImgUrl ? (
               <div className="flex flex-col items-center gap-3">
                 {promptSpeaking && (
-                  <div className="absolute rounded-2xl animate-ping border-2 border-pink-400/25 w-[320px] h-[420px] pointer-events-none" />
+                  <div className="absolute rounded-2xl animate-ping border-2 border-purple-400/25 w-[320px] h-[420px] pointer-events-none" />
                 )}
-                <div className={`relative rounded-2xl overflow-hidden border-2 shadow-2xl transition-all ${
-                  promptSpeaking
-                    ? 'border-pink-500 shadow-[0_0_40px_rgba(236,72,153,0.4)]'
-                    : 'border-[#1f293d]'
-                }`} style={{ width: 300, height: 400 }}>
-                  <img src={generatedImgUrl} alt="AI Avatar"
+                <div 
+                  className={`relative rounded-2xl overflow-hidden border-2 shadow-2xl transition-all ${
+                    promptSpeaking
+                      ? 'border-purple-500 shadow-[0_0_40px_rgba(168,85,247,0.35)]'
+                      : 'border-[#1A2540]'
+                  }`} 
+                  style={{ width: 300, height: 400 }}
+                >
+                  <img 
+                    src={generatedImgUrl} 
+                    alt="AI Avatar"
                     className="w-full h-full object-cover"
-                    style={{ objectPosition: 'center top' }} />
+                    style={{ objectPosition: 'center top' }} 
+                  />
 
-                  {/* Mouth warp overlay via canvas when speaking */}
                   <canvas
                     ref={promptSpeaking ? canvasRef : undefined}
                     className={`absolute inset-0 w-full h-full ${promptSpeaking ? 'block' : 'hidden'}`}
-                    width={300} height={400}
+                    width={300} 
+                    height={400}
                   />
 
                   {promptSpeaking && (
-                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-pink-600/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-white text-[10px] font-bold animate-pulse">
+                    <div className="absolute top-2.5 right-2.5 flex items-center gap-1.5 bg-purple-600/90 backdrop-blur-sm px-2.5 py-0.5 rounded-full text-white text-[10px] font-bold animate-pulse">
                       <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
                       SPEAKING
                     </div>
                   )}
-                  <div className="absolute bottom-2 left-2 bg-[#111726]/90 backdrop-blur-sm px-2 py-0.5 rounded-full text-[10px] text-slate-300 border border-[#1f293d]">
-                    ✨ AI Generated • {PROMPT_STYLES.find(s => s.id === promptStyle)?.label}
+
+                  <div className="absolute bottom-2.5 left-2.5 bg-[#0A0F1E]/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-[10px] text-slate-300 border border-[#1A2540] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                    <span>AI Generated • {PROMPT_STYLES.find(s => s.id === promptStyle)?.label}</span>
                   </div>
                 </div>
 
                 <button
                   onClick={() => { setGeneratedImgUrl(null); setIsPromptLoading(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#111726] border border-[#1f293d] text-slate-400 hover:text-slate-200 hover:border-pink-500/50 text-xs transition-all">
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0A0F1E] border border-[#1A2540] text-slate-300 hover:text-white hover:border-purple-500/50 text-xs transition-all font-medium"
+                >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  ပြန်ဖန်တီးရန်
+                  <span>Regenerate Avatar</span>
                 </button>
               </div>
             ) : (
               /* Prompt Input Area */
-              <div className="flex flex-col gap-4 w-full max-w-md">
+              <div className="flex flex-col gap-4 w-full max-w-md bg-[#0A0F1E] border border-[#1A2540] p-6 rounded-2xl shadow-sm">
                 <div className="text-center space-y-1">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-900/60 to-purple-900/40 flex items-center justify-center border border-pink-700/30 mx-auto">
-                    <Wand2 className="w-7 h-7 text-pink-400" />
+                  <div className="w-14 h-14 rounded-2xl bg-purple-500/15 flex items-center justify-center border border-purple-500/30 mx-auto text-purple-400">
+                    <Wand2 className="w-7 h-7" />
                   </div>
-                  <div className="text-base font-bold text-slate-300">AI Avatar ဖန်တီးပါ</div>
-                  <div className="text-xs text-slate-500">Prompt ရိုက်ပြီး AI က Avatar ဖန်တီးပေးမည်</div>
+                  <div className="text-base font-bold text-white">Generative AI Avatar Studio</div>
+                  <div className="text-xs text-slate-400">Describe your character persona and generate a talking face</div>
                 </div>
 
                 {/* Style selector */}
                 <div>
-                  <div className="text-[11px] text-slate-500 mb-2 font-semibold uppercase tracking-wide">Avatar Style</div>
+                  <div className="text-[10px] text-slate-400 mb-2 font-bold uppercase tracking-wider">Style Archetype</div>
                   <div className="grid grid-cols-3 gap-2">
                     {PROMPT_STYLES.map(s => (
-                      <button key={s.id} onClick={() => setPromptStyle(s.id)}
-                        className={`px-2.5 py-2 rounded-lg text-xs font-medium transition-all ${
+                      <button 
+                        key={s.id} 
+                        onClick={() => setPromptStyle(s.id)}
+                        className={`px-2.5 py-2 rounded-lg text-xs font-semibold transition-all ${
                           promptStyle === s.id
-                            ? 'bg-pink-600/30 border border-pink-500/60 text-pink-300'
-                            : 'bg-[#111726] border border-[#1f293d] text-slate-400 hover:border-pink-500/40'
-                        }`}>
+                            ? 'bg-purple-600 text-white shadow-sm'
+                            : 'bg-[#050A14] border border-[#1A2540] text-slate-400 hover:border-purple-500/40'
+                        }`}
+                      >
                         {s.label}
                       </button>
                     ))}
@@ -726,55 +767,54 @@ export const PhotoAvatarPage: React.FC = () => {
 
                 {/* Prompt text */}
                 <div>
-                  <div className="text-[11px] text-slate-500 mb-1.5 font-semibold uppercase tracking-wide">Prompt (ဖော်ပြချက်)</div>
-                  {/* FIX(audit-3-H): disclose third-party prompt processing and enforce the 1000-character cap. */}
-                  <p className="text-[10px] text-amber-300 mb-1">Prompts are sent to Pollinations.ai (third-party). Maximum 1000 characters.</p>
+                  <div className="text-[10px] text-slate-400 mb-1.5 font-bold uppercase tracking-wider">Prompt Description</div>
                   <textarea
                     value={promptText}
                     maxLength={1000}
                     onChange={e => setPromptText(limitPollinationsPrompt(e.target.value))}
                     rows={3}
-                    placeholder={`ဥပမာ: ${PROMPT_STYLES.find(s => s.id === promptStyle)?.example}`}
-                    className="w-full bg-[#111726] border border-[#1f293d] rounded-xl px-3 py-2.5 text-xs text-slate-200 placeholder-slate-600 resize-none focus:outline-none focus:border-pink-500/60 focus:ring-1 focus:ring-pink-500/30"
+                    placeholder={`e.g. ${PROMPT_STYLES.find(s => s.id === promptStyle)?.example}`}
+                    className="w-full bg-[#050A14] border border-[#1A2540] focus:border-purple-500/70 rounded-xl px-3 py-2 text-xs text-slate-200 placeholder:text-slate-600 resize-none focus:outline-none transition-colors"
                   />
                 </div>
 
                 {/* Negative prompt */}
                 <div>
-                  <div className="text-[11px] text-slate-500 mb-1.5 font-semibold uppercase tracking-wide">Negative Prompt (မလိုချင်တာ)</div>
+                  <div className="text-[10px] text-slate-400 mb-1.5 font-bold uppercase tracking-wider">Negative Constraints</div>
                   <input
                     value={promptNegative}
                     onChange={e => setPromptNegative(e.target.value)}
-                    className="w-full bg-[#111726] border border-[#1f293d] rounded-xl px-3 py-2 text-xs text-slate-400 focus:outline-none focus:border-pink-500/60"
+                    className="w-full bg-[#050A14] border border-[#1A2540] focus:border-purple-500/70 rounded-xl px-3 py-2 text-xs text-slate-300 focus:outline-none transition-colors"
                   />
                 </div>
 
                 <button
                   onClick={handlePromptGenerate}
                   disabled={isPromptLoading || !promptText.trim()}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-xs transition-all shadow-md active:scale-95 ${
                     isPromptLoading
-                      ? 'bg-pink-800/40 text-pink-300 cursor-not-allowed'
+                      ? 'bg-purple-900/40 text-purple-300 cursor-not-allowed border border-purple-500/30'
                       : !promptText.trim()
-                      ? 'bg-slate-800 text-slate-600 cursor-not-allowed'
-                      : 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white shadow-lg shadow-pink-900/30'
-                  }`}>
-                  {isPromptLoading
-                    ? <><Loader2 className="w-4 h-4 animate-spin" /> AI Generating... (10-30s)</>
-                    : <><Image className="w-4 h-4" /> Generate AI Avatar ✨</>
-                  }
+                      ? 'bg-[#121B30] text-slate-600 cursor-not-allowed border border-[#1A2540]'
+                      : 'bg-purple-600 hover:bg-purple-500 text-white shadow-purple-600/30'
+                  }`}
+                >
+                  {isPromptLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Synthesizing Avatar...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4" />
+                      <span>Generate Persona Avatar</span>
+                    </>
+                  )}
                 </button>
-
-                {isPromptLoading && (
-                  <div className="text-center text-xs text-slate-500 animate-pulse">
-                    🎨 Pollinations.ai မှ AI ဖန်တီးနေပါသည်... (10–30 seconds)
-                  </div>
-                )}
               </div>
             )}
           </div>
 
-          {/* Right Panel for Prompt mode — voice + script after avatar generated */}
           <ControlsPanel forPhoto={false} />
         </div>
       )}
