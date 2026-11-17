@@ -1,58 +1,64 @@
 # AuraCraft Studio
 
-A browser-based 3D avatar and voice studio built around VRM, Three.js, FastAPI, Edge-TTS, Neon Postgres, and a Cloudflare Worker gateway.
+**A browser-based 3D avatar, voice, and video creation studio.**
 
-> The deployment is designed to use provider free tiers where available. Free-tier quotas, cold starts, browser capabilities, and provider policies apply; zero cost or uninterrupted uptime is not guaranteed.
+AuraCraft Studio brings real-time 3D avatar experiences, multilingual voice narration, and creator-focused production tools into one web application.
 
-## Current application stack
+<p align="center">
+  <a href="https://auracraft-studio.vercel.app"><strong>Live Application</strong></a>
+  ·
+  <a href="https://github.com/auracraftstudio/AuraCraft-Studio/issues">Report an Issue</a>
+</p>
 
-| Layer | Implementation | Production location |
-| --- | --- | --- |
-| Frontend | React + Vite + TypeScript + Three.js / `@pixiv/three-vrm` | Vercel |
-| Backend API | FastAPI + Uvicorn + Edge-TTS | Render |
-| API gateway and Telegram webhook | Cloudflare Worker | Cloudflare Workers |
-| Persistent state and uploaded assets | PostgreSQL JSONB / BYTEA tables | Neon |
-| CI | Frontend, backend, Worker tests and dependency audits | GitHub Actions |
+## Project at a glance
 
-The production frontend lives in `apps/web-platform/frontend`. The backend lives in `apps/web-platform/backend`; the Worker lives in `apps/web-platform/backend/cloudflare_worker`.
+| Area | Technology |
+| --- | --- |
+| Frontend | React, Vite, TypeScript |
+| 3D rendering | Three.js, `@pixiv/three-vrm` |
+| Backend API | FastAPI, Uvicorn |
+| Voice synthesis | Edge-TTS |
+| Database | Neon PostgreSQL |
+| API gateway | Cloudflare Workers |
+| Hosting | Vercel, Render, Cloudflare |
+| CI | GitHub Actions |
 
-## Implemented capabilities
+## Features
 
-- **3D avatar stage:** browser-side Three.js and VRM rendering with character presets and avatar controls.
-- **Character library:** character records and persona metadata served by the FastAPI backend.
-- **Voice catalog and narration:** multilingual Edge-TTS voice catalog and server-side speech synthesis.
-- **Video Studio:** storyboard editing, local render-plan manifests, and browser-side narrated video capture. Export format depends on the browser's `MediaRecorder` support (MP4 where supported, otherwise WebM).
-- **OBS broadcast UI:** browser-based broadcast/overlay interface.
-- **Telegram integration:** a Cloudflare Worker validates the webhook secret and private chat/topic/user allowlist before forwarding updates to FastAPI. This feature requires the Worker secrets documented in `apps/web-platform/backend/cloudflare_worker/README.md`.
-
-This repository does not currently use Next.js, Supabase, or a Gemini conversational backend. Neon is the configured PostgreSQL provider.
+- **3D Avatar Stage** — browser-based 3D character rendering with VRM support and avatar controls.
+- **Character Library** — character records and persona metadata served by the backend.
+- **Voice & Narration** — multilingual voice catalog and server-side text-to-speech synthesis.
+- **Video Studio** — storyboard editing, render-plan manifests, and browser-based narrated capture. Export formats depend on browser MediaRecorder support.
+- **OBS Broadcast UI** — browser-based broadcast and overlay interface.
+- **Telegram Integration** — optional webhook integration routed through a Cloudflare Worker with server-side validation and allowlist checks.
 
 ## Architecture
 
 ```text
-Browser (Vercel / React + Three.js)
-              |
-              v
-Cloudflare Worker API Gateway
-  - checks allowed browser origins
-  - injects server-side API_AUTH_TOKEN
-  - validates Telegram webhook requests
-              |
-              v
-FastAPI backend (Render)
-  - character and voice APIs
-  - Edge-TTS synthesis
-  - render-plan manifests
-              |
-              v
+Web Browser
+    |
+    v
+React + Vite + Three.js (Vercel)
+    |
+    v
+Cloudflare Worker Gateway
+    |
+    v
+FastAPI Backend (Render)
+    |
+    v
 Neon PostgreSQL
-  - auracraft_state
-  - auracraft_assets
 ```
 
-Telegram Bot API calls from the backend are routed through the Worker. The Telegram bot token belongs in Cloudflare Worker secrets, never in a Vite environment variable or browser bundle.
+## Repository structure
 
-## Local development
+The production application code is organized under `apps/web-platform`:
+
+- `apps/web-platform/frontend` — React / Vite frontend.
+- `apps/web-platform/backend` — FastAPI backend.
+- `apps/web-platform/backend/cloudflare_worker` — Cloudflare Worker gateway and Telegram webhook.
+
+## Run locally
 
 ### Frontend
 
@@ -62,19 +68,15 @@ npm ci
 npm run dev
 ```
 
-The Vite development server uses `http://localhost:5180` by default. Set `VITE_API_URL` to a reachable backend or local API gateway when testing backend features.
-
 ### Backend
 
 ```bash
 cd apps/web-platform/backend
 python -m venv .venv
-# Activate the virtual environment for your shell, then:
+# Activate the virtual environment, then:
 pip install -r requirements-dev.txt
 uvicorn app.main:app --reload --port 8010
 ```
-
-For persistent local testing, configure `DATABASE_URL` with a Neon or local PostgreSQL connection string. Without it, the backend uses its local JSON-file adapter.
 
 ### Cloudflare Worker
 
@@ -86,28 +88,23 @@ npm run lint
 npx wrangler deploy --dry-run
 ```
 
-Do not deploy the Worker until its required secrets are configured. See the Worker README for the exact secret names and provider settings.
+Configure required environment variables and provider secrets in the relevant dashboards. **Never commit API tokens, database credentials, Telegram bot tokens, webhook secrets, or private user identifiers.**
 
-## CI checks
+## CI
 
-GitHub Actions runs:
+GitHub Actions is configured to check the frontend, backend, and Worker. See the workflow files in `.github/workflows` for the exact jobs and commands.
 
-- Backend: Ruff, Mypy, Pytest, and Python dependency audit.
-- Frontend: ESLint, Vitest, production build, and npm dependency audit.
-- Worker: syntax checks, Node tests, Wrangler dry-run, and npm dependency audit.
+## Deployment
 
-The production deploy job should run only after all three test jobs pass.
+- **Frontend:** [auracraft-studio.vercel.app](https://auracraft-studio.vercel.app)
+- **Backend:** Render (see `render.yaml`)
+- **Gateway:** Cloudflare Workers (see Worker configuration)
 
-## Production configuration
+Free-tier availability, usage quotas, cold starts, and provider policies may apply; uninterrupted uptime and zero cost are not guaranteed.
 
-Use the provider dashboards for secrets. Never commit real `DATABASE_URL`, `API_AUTH_TOKEN`, Telegram bot tokens, webhook secrets, private chat IDs, or user allowlists.
+## Project status
 
-See:
-
-- `render.yaml` for the Render backend blueprint.
-- `apps/web-platform/backend/cloudflare_worker/wrangler.toml` for Worker configuration.
-- `apps/web-platform/backend/cloudflare_worker/README.md` for the Worker secret setup and Vercel/Render integration.
-- `.env.production.example` for variable names and public endpoint references only.
+This is the primary application repository for AuraCraft Studio. Features and deployment readiness should be verified against the current source code and CI results before being described as production-ready.
 
 ## License
 
