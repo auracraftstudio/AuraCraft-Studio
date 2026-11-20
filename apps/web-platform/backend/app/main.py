@@ -75,7 +75,8 @@ app.add_middleware(
 @app.on_event("startup")
 async def validate_production_configuration():
     environment = (os.getenv("ENV") or os.getenv("ENVIRONMENT") or os.getenv("APP_ENV") or "").lower()
-    if environment in {"production", "prod"} and not _allowed_origins:
+    raw_origins = os.getenv("ALLOWED_ORIGINS", "").strip()
+    if environment in {"production", "prod"} and (not raw_origins or "*" in raw_origins):
         raise RuntimeError("ALLOWED_ORIGINS must be configured in production")
     # FIX(free-tier-3): fail fast instead of silently falling back to ephemeral files on Render Free.
     if os.getenv("REQUIRE_DATABASE_URL", "").strip().lower() in {"1", "true", "yes"} and not database_enabled():
@@ -311,8 +312,10 @@ _character_records = TypeAdapter(list[CharacterRecord])
 def _atomic_write_characters(data: list[dict[str, Any]]) -> None:
     validated = [item.model_dump(mode="json") for item in _character_records.validate_python(data)]
     temp_path: str | None = None
+    target_dir = CHARACTERS_FILE.parent
+    target_dir.mkdir(parents=True, exist_ok=True)
     try:
-        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=DATA_DIR, prefix=".characters-", suffix=".tmp", delete=False) as handle:
+        with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=target_dir, prefix=".characters-", suffix=".tmp", delete=False) as handle:
             temp_path = handle.name
             json.dump(validated, handle, indent=2, ensure_ascii=False)
             handle.flush()
@@ -1146,7 +1149,7 @@ def _render_plan_path(plan_id: str) -> Path:
 
 
 @app.get("/api/avatar-video/render-plans")
-def list_avatar_video_render_plans():
+def list_avatar_video_render_plans(_: None = Depends(require_auth)):
     """List saved render manifests; no render provider is contacted."""
     summary_keys = ("plan_id", "created_at", "status", "character", "aspect_ratio", "estimated_duration_seconds")
     if database_enabled():
@@ -1162,7 +1165,7 @@ def list_avatar_video_render_plans():
 
 
 @app.get("/api/avatar-video/render-plans/{plan_id}/download")
-def download_avatar_video_render_plan(plan_id: str):
+def download_avatar_video_render_plan(plan_id: str, _: None = Depends(require_auth)):
     if database_enabled():
         found, plan = read_state(f"render_plan:{plan_id}")
         if not found:
@@ -1405,7 +1408,7 @@ def export_character_pack(payload: PersonaPackExportRequest, _: None = Depends(r
 
 
 @app.get("/api/characters/{character_id}/download-pack")
-def download_persona_pack(character_id: str):
+def download_persona_pack(character_id: str, _: None = Depends(require_auth)):
     """Directly download the exported character asset pack as a JSON file."""
     chars = load_characters()
     target = next((c for c in chars if c["id"] == character_id), None)
@@ -1450,7 +1453,7 @@ def download_persona_pack(character_id: str):
 
 
 @app.get("/api/characters/download-all-packs")
-def download_all_persona_packs():
+def download_all_persona_packs(_: None = Depends(require_auth)):
     """Bulk download all character asset packs as a single bundled JSON array."""
     chars = load_characters()
     all_packs = []

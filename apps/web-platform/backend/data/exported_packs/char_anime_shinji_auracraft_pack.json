@@ -1,0 +1,33 @@
+{
+  "export_version": "1.0.0",
+  "source_studio": "AuraCraft Studio",
+  "actor_id": "char_anime_shinji",
+  "actor_name": "Shinji Kazama (シンジ)",
+  "role": "Anime Protagonist / Mecha Pilot",
+  "style": "anime",
+  "voice_binding": {
+    "engine": "edge-tts",
+    "voice_id": "ja-JP-KeitaNeural",
+    "language": "ja-JP"
+  },
+  "vrm_model_path": "/models/sample_avatar_c.vrm",
+  "avatar_color": "#38bdf8",
+  "expression_map": {
+    "neutral": "blendshape_neutral",
+    "happy": "blendshape_happy",
+    "angry": "blendshape_angry",
+    "sad": "blendshape_sad",
+    "surprised": "blendshape_surprised"
+  },
+  "character_meta": {
+    "personality_prompt": "Determined, heroic, courageous young anime mech pilot fighting for humanity",
+    "style": "anime",
+    "tags": [
+      "anime",
+      "shonen",
+      "mecha",
+      "hero",
+      "japanese"
+    ]
+  }
+}

@@ -628,5 +628,22 @@
       "mecha",
       "combat"
     ]
+  },
+  {
+    "id": "char_anime_kenshiro_unit_01_37",
+    "name": "Kenshiro Unit 01",
+    "role": "Cyber Combat Mecha",
+    "style": "anime",
+    "voice_id": "ja-JP-KeitaNeural",
+    "language": "ja-JP",
+    "personality": "Fearless vanguard mecha pilot",
+    "vrm_model": "/models/avatar_female_a.vrm",
+    "default_emotion": "neutral",
+    "avatar_color": "#06b6d4",
+    "tags": [
+      "anime",
+      "mecha",
+      "combat"
+    ]
   }
 ]
