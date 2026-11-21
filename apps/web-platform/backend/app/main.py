@@ -888,12 +888,19 @@ async def telegram_webhook(
     """Handle Telegram updates only after authenticating the Cloudflare edge gateway."""
     expected_api_token = os.getenv("API_AUTH_TOKEN", "").strip()
     scheme, _, supplied_token = (authorization or "").partition(" ")
+    gateway_secret = os.getenv("GATEWAY_SECRET", "").strip()
+    x_gateway_token = request.headers.get("x-gateway-token", "").strip()
+    gateway_verified = True
+    if gateway_secret:
+        gateway_verified = bool(x_gateway_token and hmac.compare_digest(x_gateway_token, gateway_secret))
+
     worker_verified = bool(
         expected_api_token
         and scheme.lower() == "bearer"
         and supplied_token
         and hmac.compare_digest(supplied_token, expected_api_token)
         and x_auracraft_worker_verified == "true"
+        and gateway_verified
     )
     if not worker_verified:
         if not TELEGRAM_WEBHOOK_SECRET:
@@ -907,18 +914,17 @@ async def telegram_webhook(
         return {"ok": True, "ignored": "not_a_message"}
 
     topic_id = message.get("message_thread_id")
-    if not worker_verified:
-        # Local/non-edge fallback remains fail-closed; production verification is performed by Worker.
-        if topic_id != TELEGRAM_TOPIC_ID:
-            return {"ok": True, "ignored": f"unauthorized_topic_{topic_id}"}
-        if str(message.get("chat", {}).get("id")) != TELEGRAM_GROUP_CHAT_ID:
-            return {"ok": True, "ignored": "unauthorized_chat"}
-        allowed_users = _allowed_telegram_user_ids()
-        user_id_text = str(message.get("from", {}).get("id"))
-        if _production_mode() and not allowed_users:
-            raise HTTPException(status_code=503, detail="Telegram user allowlist is not configured")
-        if allowed_users and not any(hmac.compare_digest(user_id_text, allowed_id) for allowed_id in allowed_users):
-            return {"ok": True, "ignored": "unauthorized_user"}
+    # Always enforce topic, chat, and allowlist regardless of edge proxy
+    if topic_id != TELEGRAM_TOPIC_ID:
+        return {"ok": True, "ignored": f"unauthorized_topic_{topic_id}"}
+    if str(message.get("chat", {}).get("id")) != TELEGRAM_GROUP_CHAT_ID:
+        return {"ok": True, "ignored": "unauthorized_chat"}
+    allowed_users = _allowed_telegram_user_ids()
+    user_id_text = str(message.get("from", {}).get("id"))
+    if _production_mode() and not allowed_users:
+        raise HTTPException(status_code=503, detail="Telegram user allowlist is not configured")
+    if allowed_users and not any(hmac.compare_digest(user_id_text, allowed_id) for allowed_id in allowed_users):
+        return {"ok": True, "ignored": "unauthorized_user"}
 
     text = message.get("text", "").strip()
     command = text.split()[0].lower() if text else ""

@@ -67,9 +67,11 @@ export default {
         if (backend.protocol !== "https:") {
           return Response.json({ error: "backend_not_configured" }, { status: 503, headers: origin ? corsHeaders(origin) : {} });
         }
+        const readinessHeaders = { "Authorization": `Bearer ${env.API_AUTH_TOKEN}` };
+        if (env.GATEWAY_SECRET) readinessHeaders["X-Gateway-Token"] = env.GATEWAY_SECRET;
         const response = await fetch(backend.toString(), {
           method: "GET",
-          headers: { "Authorization": `Bearer ${env.API_AUTH_TOKEN}` },
+          headers: readinessHeaders,
           redirect: "manual",
         });
         const headers = new Headers({
@@ -144,9 +146,11 @@ export default {
         if (backend.protocol !== "https:") {
           return Response.json({ error: "backend_not_configured" }, { status: 503, headers: origin ? corsHeaders(origin) : {} });
         }
+        const catalogHeaders = { "Authorization": `Bearer ${env.API_AUTH_TOKEN}` };
+        if (env.GATEWAY_SECRET) catalogHeaders["X-Gateway-Token"] = env.GATEWAY_SECRET;
         const response = await fetch(backend.toString(), {
           method: "GET",
-          headers: { "Authorization": `Bearer ${env.API_AUTH_TOKEN}` },
+          headers: catalogHeaders,
           redirect: "manual",
         });
         const headers = new Headers(response.headers);
@@ -214,6 +218,7 @@ export default {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${env.API_AUTH_TOKEN}`,
             "X-AuraCraft-Worker-Verified": "true",
+            ...(env.GATEWAY_SECRET ? { "X-Gateway-Token": env.GATEWAY_SECRET } : {}),
           },
           body: rawBody,
         });
