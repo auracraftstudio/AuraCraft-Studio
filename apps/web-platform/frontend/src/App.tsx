@@ -28,10 +28,33 @@ import {
 import { lipSync } from './audio/lipSyncAnalyzer';
 import { translations, type Language } from './utils/i18n';
 import type { Character } from './types/character';
+import { LoginPage } from './components/LoginPage';
+import { NexusAppSwitcher } from './components/NexusAppSwitcher';
 
 type NavTab = 'studio' | 'characters' | 'voices' | 'video' | 'broadcast' | 'photo' | 'img2char' | 'library' | 'workflows' | 'usage' | 'settings';
 
+interface AuthUser {
+  email: string;
+  name: string;
+  role: string;
+  token?: string;
+}
+
 export default function App() {
+  const [authUser, setAuthUser] = useState<AuthUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('auracraft_auth_user');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const handleSignOut = () => {
+    localStorage.removeItem('auracraft_auth_user');
+    setAuthUser(null);
+  };
+
   const [lang, setLang] = useState<Language>('en');
   const t = translations[lang] || translations.en;
 
@@ -280,6 +303,11 @@ export default function App() {
     }
   }, []);
 
+  // Authentication Guard: Require login if not authenticated
+  if (!authUser) {
+    return <LoginPage onLoginSuccess={(u) => setAuthUser(u)} />;
+  }
+
   if (isOBSMode) {
     // Ultra-clean OBS Studio Viewport with floating exit button
     return (
@@ -413,6 +441,15 @@ export default function App() {
             <span className="w-2 h-2 rounded-full bg-emerald-400" />
             <span className="text-[11px] font-medium text-emerald-400">{t.online}</span>
           </div>
+
+          {/* The Nexus Suite App Switcher & User Account */}
+          <NexusAppSwitcher
+            currentAppId="auracraft"
+            userEmail={authUser.email}
+            userName={authUser.name}
+            userRole={authUser.role}
+            onSignOut={handleSignOut}
+          />
         </div>
       </header>
 
