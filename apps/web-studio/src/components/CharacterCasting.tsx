@@ -14,6 +14,8 @@ export interface CharacterArchetype {
   color: string;
   personality: string;
   avatar_url?: string;
+  lora_tag?: string;
+  face_reference_url?: string;
 }
 
 type MotionPreset = { id: string; name: string; expression: string; animation: 'idle' | 'talk' | 'wave' | 'nod'; intensity: number };

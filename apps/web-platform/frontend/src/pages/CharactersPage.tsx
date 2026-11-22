@@ -31,6 +31,8 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({
   const [newAvatarType, setNewAvatarType] = useState<'vrm_3d' | 'image_2d'>('vrm_3d');
   const [newVoice, setNewVoice] = useState('my-MM-NilarNeural');
   const [newPersonality, setNewPersonality] = useState('');
+  const [newLoraTag, setNewLoraTag] = useState('');
+  const [newFaceRefUrl, setNewFaceRefUrl] = useState('');
 
   // Default presets with pure text badges (no emojis)
   const DEFAULT_PRESETS: CharacterArchetype[] = [
@@ -46,6 +48,8 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({
       badge: 'Anime Hero',
       color: '#38bdf8',
       personality: 'Determined, heroic young mecha pilot piloting the Quantum Frame in deep space reconnaissance.',
+      lora_tag: '<lora:shinji_kazama:0.85> shinji_pilot, mecha uniform',
+      face_reference_url: '/assets/avatars/shinji_face_ref.png',
     },
     {
       id: 'char_anime_sakura',
@@ -59,6 +63,8 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({
       badge: 'Anime Idol',
       color: '#ec4899',
       personality: 'Cheerful, radiant magical girl spreading hope and acoustic energy across orbital colonies.',
+      lora_tag: '<lora:sakura_hoshino:0.85> sakura_idol, pink twintails',
+      face_reference_url: '/assets/avatars/sakura_face_ref.png',
     },
     {
       id: 'char_realistic_daw_khin',
@@ -224,6 +230,8 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({
       badge: badgeLabel,
       color: newStyle === 'realistic' ? '#06b6d4' : '#a855f7',
       personality: newPersonality.trim() || `${newName} - Custom configured character persona`,
+      lora_tag: newLoraTag.trim() || undefined,
+      face_reference_url: newFaceRefUrl.trim() || undefined,
     };
 
     const stored = localStorage.getItem('auracraft_custom_chars');
@@ -236,6 +244,8 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({
     setNewName('');
     setNewRole('');
     setNewPersonality('');
+    setNewLoraTag('');
+    setNewFaceRefUrl('');
   };
 
   const handleDeleteCharacter = (id: string) => {
@@ -495,6 +505,19 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({
                 "{char.personality}"
               </p>
 
+              {/* LoRA DNA Badge if configured */}
+              {char.lora_tag && (
+                <div className="mb-2 bg-purple-950/20 border border-purple-500/30 rounded-lg px-2.5 py-1.5 flex items-center justify-between text-[10px]">
+                  <span className="text-purple-300 font-medium flex items-center gap-1">
+                    <Sparkles className="w-3 h-3 text-purple-400" />
+                    LoRA DNA
+                  </span>
+                  <span className="font-mono text-purple-200/90 truncate max-w-[140px]" title={char.lora_tag}>
+                    {char.lora_tag}
+                  </span>
+                </div>
+              )}
+
               {/* Meta Tags */}
               <div className="grid grid-cols-2 gap-2 text-[10px] mb-3.5">
                 <div className="bg-[#050A14] px-2.5 py-1.5 rounded-lg border border-[#1A2540] flex items-center justify-between">
@@ -669,6 +692,42 @@ export const CharactersPage: React.FC<CharactersPageProps> = ({
                   onChange={(e) => setNewPersonality(e.target.value)}
                   className="w-full bg-[#050A14] border border-[#1A2540] rounded-xl px-3.5 py-2 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-purple-500/70"
                 />
+              </div>
+
+              {/* Visual DNA & LoRA Fields */}
+              <div className="p-3 bg-[#050A14] border border-[#1A2540] rounded-xl space-y-3">
+                <div className="flex items-center gap-1.5 text-purple-400 font-semibold text-[11px] uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Visual DNA & LoRA Consistency (Narrativ Forge Sync)</span>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">LoRA Trigger Tag / Model Binding</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. <lora:hero_aung:0.85> aung_character, military jacket"
+                    value={newLoraTag}
+                    onChange={(e) => setNewLoraTag(e.target.value)}
+                    className="w-full bg-[#0A0F1E] border border-[#1A2540] rounded-lg px-3 py-1.5 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-500/70"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Auto-injected into Narrativ Forge prompt generators to maintain exact character facial fidelity.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-slate-300 font-medium mb-1">Face Reference Snapshot URL</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. /models/faces/hero_face.png or https://..."
+                    value={newFaceRefUrl}
+                    onChange={(e) => setNewFaceRefUrl(e.target.value)}
+                    className="w-full bg-[#0A0F1E] border border-[#1A2540] rounded-lg px-3 py-1.5 text-slate-100 placeholder:text-slate-600 focus:outline-none focus:border-purple-500/70"
+                  />
+                  <p className="text-[10px] text-slate-500 mt-1">
+                    Reference portrait used for IP-Adapter and FaceID conditioning across episodes.
+                  </p>
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2.5 pt-3.5 border-t border-[#1A2540]">
