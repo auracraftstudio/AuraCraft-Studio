@@ -15,7 +15,7 @@ export const ApiUsageCard: React.FC<ApiUsageCardProps> = ({
   lang = 'en',
 }) => {
   const [requestCount, setRequestCount] = useState(18);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [visemes, setVisemes] = useState({ aa: 0, ih: 0, ou: 0, ee: 0, volume: 0 });
 
   useEffect(() => {

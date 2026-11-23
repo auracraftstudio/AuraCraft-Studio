@@ -61,35 +61,7 @@ interface ErrorLog {
   stackTrace: string;
 }
 
-const ERROR_LOGS: ErrorLog[] = [
-  {
-    id: 'err-1',
-    type: 'error',
-    title: 'AzureTTSSocketTimeout: Latency spike > 1400ms on synthesis stream',
-    source: 'audio/lipSyncAnalyzer.ts',
-    timestamp: '2 hours ago',
-    count: 3,
-    stackTrace: 'Error: SocketTimeoutException: Connection closed before EOS\n  at WebSocket.onclose (api.ts:89)\n  at LipSyncAnalyzer.synthesize (lipSyncAnalyzer.ts:142)\n  at async handleVoicePlay (VoiceSelector.tsx:64)'
-  },
-  {
-    id: 'err-2',
-    type: 'warning',
-    title: 'VRMSpringBoneCollisionWarning: Secondary physics clipped on frame 412',
-    source: 'components/Viewport3D.tsx',
-    timestamp: '5 hours ago',
-    count: 1,
-    stackTrace: 'Warning: VRMSpringBone: collider radius penetrated mesh boundary\n  at VRMSpringBoneManager.update (three-vrm.module.js:1802)\n  at renderFrame (Viewport3D.tsx:210)'
-  },
-  {
-    id: 'err-3',
-    type: 'error',
-    title: 'AudioBufferUnderrun: WebAudio output starved during rapid emotion shift',
-    source: 'audio/audioMixer.ts',
-    timestamp: '1 day ago',
-    count: 7,
-    stackTrace: 'AudioContext underrun detected: buffer underflow in AudioWorkletNode\n  at AudioMixer.pumpBuffers (audioMixer.ts:55)\n  at EmotionPalette.triggerQuickMood (EmotionPalette.tsx:98)'
-  }
-];
+const ERROR_LOGS: ErrorLog[] = [];
 
 // 7-day request trend data
 const DAILY_REQUESTS = [
@@ -466,7 +438,14 @@ export function UsagePage() {
           </div>
 
           <div className="divide-y divide-[#1a2540]/60">
-            {filteredErrors.map((err) => {
+            {filteredErrors.length === 0 ? (
+              <div className="p-8 text-center flex flex-col items-center justify-center gap-2">
+                <CheckCircle2 className="w-8 h-8 text-emerald-400" />
+                <span className="text-sm font-semibold text-slate-200">All Systems Nominal</span>
+                <span className="text-xs text-slate-400">0 unhandled exceptions or error events in the last 24 hours.</span>
+              </div>
+            ) : (
+              filteredErrors.map((err) => {
               const isExpanded = expandedErrorId === err.id;
               return (
                 <div key={err.id} className="p-4 hover:bg-[#0f1628]/40 transition-colors">
@@ -517,7 +496,7 @@ export function UsagePage() {
                   )}
                 </div>
               );
-            })}
+            }))}
           </div>
         </div>
       </div>

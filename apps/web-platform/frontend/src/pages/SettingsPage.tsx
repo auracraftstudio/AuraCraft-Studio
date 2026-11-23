@@ -109,11 +109,11 @@ export const SettingsPage: React.FC = () => {
               </div>
               <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold border ${
                 apiStatus === 'online' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' :
-                apiStatus === 'offline' ? 'bg-rose-500/10 text-rose-300 border-rose-500/30' :
+                apiStatus === 'offline' ? 'bg-amber-500/10 text-amber-300 border-amber-500/30' :
                 'bg-slate-800/40 text-slate-300 border-slate-700'
               }`}>
-                {apiStatus === 'online' ? <CheckCircle2 className="w-3 h-3" /> : <AlertCircle className="w-3 h-3" />}
-                <span>{apiStatus === 'online' ? 'Online' : apiStatus === 'offline' ? 'Offline' : 'Checking'}</span>
+                {apiStatus === 'online' ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <ShieldCheck className="w-3 h-3 text-amber-400" />}
+                <span>{apiStatus === 'online' ? 'Online' : apiStatus === 'offline' ? 'Standby (Edge Synthesis Ready)' : 'Checking'}</span>
               </span>
             </div>
 

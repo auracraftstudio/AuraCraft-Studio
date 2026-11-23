@@ -72,3 +72,5 @@ ehthumbs.db
 inspector_credentials.env
 auth_sessions/
 *.session.json
+.vercel
+.env*
