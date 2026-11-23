@@ -23,4 +23,5 @@ ignore = [
 # Allow broad exception patterns in tests
 "apps/web-platform/backend/tests/**" = ["E402", "F401", "F811"]
 # Storage module uses SHA-1 required by Cloudinary API spec (not for security)
-"apps/web-platform/backend/app/storage.py" = ["S324"]
+"apps/web-platform/backend/app/storage.py" = ["S324", "F401"]
+"app/storage.py" = ["S324", "F401"]

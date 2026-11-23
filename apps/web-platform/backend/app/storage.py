@@ -10,7 +10,6 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import BinaryIO
-from urllib.parse import quote, urlsplit, urlunsplit
 
 import requests
 
