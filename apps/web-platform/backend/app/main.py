@@ -83,28 +83,43 @@ async def validate_production_configuration():
         raise RuntimeError("DATABASE_URL must be configured for durable production storage")
 
 
-# FIX(audit-1-B): protect write APIs with bearer token or authorized origin.
-def require_auth(request: Request, authorization: str | None = Header(default=None)) -> None:
+# FIX(audit-1-B): protect write APIs with a constant-time checked bearer token or authorized web origin.
+def require_auth(
+    authorization: str | None = Header(default=None),
+    request: Request = None,
+) -> None:
     expected = os.getenv("API_AUTH_TOKEN", "").strip()
     if expected:
         scheme, _, supplied = (authorization or "").partition(" ")
         if scheme.lower() == "bearer" and supplied and hmac.compare_digest(supplied, expected):
             return
+        if request is not None and hasattr(request, "headers"):
+            origin = request.headers.get("origin") or request.headers.get("referer", "")
+            if origin:
+                try:
+                    parsed = urlsplit(origin)
+                    origin_base = f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
+                    allowed = {o.rstrip("/") for o in _allowed_origins}
+                    if origin_base in allowed:
+                        return
+                except Exception:
+                    pass
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
-    origin = request.headers.get("origin") or request.headers.get("referer", "")
-    if origin:
-        try:
-            parsed = urlsplit(origin)
-            origin_base = f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
-            allowed = {o.rstrip("/") for o in _allowed_origins}
-            if origin_base in allowed:
-                return
-        except Exception:
-            pass
+    if request is not None and hasattr(request, "headers"):
+        origin = request.headers.get("origin") or request.headers.get("referer", "")
+        if origin:
+            try:
+                parsed = urlsplit(origin)
+                origin_base = f"{parsed.scheme}://{parsed.netloc}".rstrip("/")
+                allowed = {o.rstrip("/") for o in _allowed_origins}
+                if origin_base in allowed:
+                    return
+            except Exception:
+                pass
 
-    if not expected and not _production_mode():
-        return
-    raise HTTPException(status_code=401, detail="Unauthorized")
+    if _production_mode():
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
 
 # FIX(audit-1-E): bound TTS usage to ten requests/minute per client and credential.
