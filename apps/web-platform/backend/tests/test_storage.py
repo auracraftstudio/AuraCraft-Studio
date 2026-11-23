@@ -1,13 +1,7 @@
 import io
-from unittest.mock import MagicMock, patch
-
-import pytest
 
 from app.storage import (
-    StoredObject,
     classify_media_storage,
-    is_b2_configured,
-    is_cloudinary_configured,
     upload_asset,
 )
 
