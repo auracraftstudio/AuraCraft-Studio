@@ -445,9 +445,9 @@ export default function App() {
           {/* The Nexus Suite App Switcher & User Account */}
           <NexusAppSwitcher
             currentAppId="auracraft"
-            userEmail={authUser.email}
-            userName={authUser.name}
-            userRole={authUser.role}
+            userEmail={authUser?.email || "thuwon417@gmail.com"}
+            userName={authUser?.name || "Thu Won"}
+            userRole={authUser?.role || "Admin"}
             onSignOut={handleSignOut}
           />
         </div>
@@ -555,7 +555,7 @@ export default function App() {
           </div>
 
           {/* Sidebar Footer Status Indicator */}
-          <div className="p-3 border-t border-[#1a2540] bg-[#070b16] text-[10px] text-slate-500 flex items-center justify-between">
+          <div className="p-3 border-t border-[#1a2540] bg-[#070b16] text-[10px] text-slate-500 flex items-center justify-between flex-shrink-0">
             <span className="font-semibold text-slate-400">AuraCraft Studio</span>
             <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono text-[9px] border border-purple-500/20">
               {stageMode.toUpperCase()}
