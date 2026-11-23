@@ -86,7 +86,7 @@ async def validate_production_configuration():
 # FIX(audit-1-B): protect write APIs with a constant-time checked bearer token or authorized web origin.
 def require_auth(
     authorization: str | None = Header(default=None),
-    request: Request = None,
+    request: Request = None,  # type: ignore[assignment]
 ) -> None:
     expected = os.getenv("API_AUTH_TOKEN", "").strip()
     if expected:
