@@ -148,9 +148,9 @@ def upload_to_cloudinary(file_obj: BinaryIO, filename: str, content_type: str) -
     except ImportError:
         pass
 
-    # Direct HTTPS upload with signature
+    # Direct HTTPS upload with signature (Cloudinary requires SHA-1 per their API spec)
     to_sign = f"public_id={public_id}&timestamp={timestamp}{api_secret}"
-    signature = hashlib.sha1(to_sign.encode("utf-8")).hexdigest()
+    signature = hashlib.new("sha1", to_sign.encode("utf-8"), usedforsecurity=False).hexdigest()  # noqa: S324
 
     b64_data = f"data:{content_type};base64," + base64.b64encode(body).decode("utf-8")
     payload = {

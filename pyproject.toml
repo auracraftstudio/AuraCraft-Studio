@@ -1,0 +1,26 @@
+[tool.ruff]
+# Exclude virtual environments and node_modules
+exclude = [
+    ".git",
+    "__pycache__",
+    "node_modules",
+    ".venv",
+    "venv",
+]
+
+[tool.ruff.lint]
+# Select core error/warning rules (E, W, F)
+# Exclude security rules (S) — handled by pip-audit and manual review
+# Exclude convention rules (C) and refactoring (R) that are stylistic
+select = ["E", "W", "F"]
+ignore = [
+    "E501",   # line too long — handled by formatter
+    "W291",   # trailing whitespace
+    "W293",   # whitespace before comment
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Allow broad exception patterns in tests
+"apps/web-platform/backend/tests/**" = ["E402", "F401", "F811"]
+# Storage module uses SHA-1 required by Cloudinary API spec (not for security)
+"apps/web-platform/backend/app/storage.py" = ["S324"]
