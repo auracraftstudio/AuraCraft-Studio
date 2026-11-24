@@ -637,15 +637,15 @@ export default function App() {
 
               {/* Bottom Stage Status Badge */}
               <footer className="absolute bottom-3 left-4 right-4 z-20 flex items-center justify-between text-[11px] text-slate-400 pointer-events-none">
-                <div className="bg-[#0A0F1E]/95 backdrop-blur-md border border-[#1a2540] px-3.5 py-1.5 rounded-xl pointer-events-auto shadow-lg flex items-center gap-2">
-                  <span>{t.actor}: </span>
-                  <span className="text-purple-300 font-semibold">{currentActorName}</span>
-                  <span className="text-slate-700">|</span>
-                  <span>{t.voice}: </span>
-                  <span className="text-slate-200 font-medium">{currentVoice}</span>
-                  <span className="text-slate-700">|</span>
-                  <span>{t.emotion}: </span>
-                  <span className="text-purple-300 font-medium uppercase">{currentEmotion}</span>
+                <div className="bg-[#0A0F1E]/95 backdrop-blur-md border border-[#1a2540] px-3.5 py-1.5 rounded-xl pointer-events-auto shadow-lg flex items-center gap-2 whitespace-nowrap overflow-hidden text-ellipsis">
+                  <span className="flex-shrink-0">{t.actor}: </span>
+                  <span className="text-purple-300 font-semibold truncate max-w-[140px] sm:max-w-[200px]">{currentActorName}</span>
+                  <span className="text-slate-700 flex-shrink-0">|</span>
+                  <span className="flex-shrink-0">{t.voice}: </span>
+                  <span className="text-slate-200 font-medium truncate max-w-[120px]">{currentVoice}</span>
+                  <span className="text-slate-700 flex-shrink-0">|</span>
+                  <span className="flex-shrink-0">{t.emotion}: </span>
+                  <span className="text-purple-300 font-medium uppercase flex-shrink-0">{currentEmotion}</span>
                 </div>
 
                 <div className="bg-[#0A0F1E]/95 backdrop-blur-md border border-[#1a2540] px-3.5 py-1.5 rounded-xl pointer-events-auto text-[10px] text-slate-400 shadow-lg">

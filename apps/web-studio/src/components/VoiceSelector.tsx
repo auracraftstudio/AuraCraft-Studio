@@ -182,10 +182,10 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
 
       {/* Speed & Pitch Controls */}
       <div className="grid grid-cols-2 gap-2 bg-[#050A14] p-2 rounded-xl border border-[#1a2540] text-[11px]">
-        <div className="flex flex-col gap-1">
-          <div className="flex justify-between text-slate-400 text-[10px]">
-            <span>{isMyanmar ? 'အမြန်နှုန်း' : 'Speed'}</span>
-            <span className="text-purple-300 font-mono font-bold">{rate.toFixed(1)}x</span>
+        <div className="flex flex-col gap-1 min-w-0">
+          <div className="flex justify-between items-center text-slate-400 text-[10px] whitespace-nowrap">
+            <span className="truncate">{isMyanmar ? 'အမြန်နှုန်း' : 'Speed'}</span>
+            <span className="text-purple-300 font-mono font-bold shrink-0">{rate.toFixed(1)}x</span>
           </div>
           <input
             type="range"
@@ -198,10 +198,10 @@ export const VoiceSelector: React.FC<VoiceSelectorProps> = ({
           />
         </div>
 
-        <div className="flex flex-col gap-1">
-          <div className="flex justify-between text-slate-400 text-[10px]">
-            <span>{isMyanmar ? 'အမြင့်အနိမ့်' : 'Pitch'}</span>
-            <span className="text-purple-300 font-mono font-bold">{pitch > 0 ? `+${pitch}` : pitch}Hz</span>
+        <div className="flex flex-col gap-1 min-w-0">
+          <div className="flex justify-between items-center text-slate-400 text-[10px] whitespace-nowrap">
+            <span className="truncate">{isMyanmar ? 'အမြင့်အနိမ့်' : 'Pitch'}</span>
+            <span className="text-purple-300 font-mono font-bold shrink-0">{pitch > 0 ? `+${pitch}` : pitch}Hz</span>
           </div>
           <input
             type="range"
